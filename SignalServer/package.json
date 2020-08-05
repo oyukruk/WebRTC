@@ -1,0 +1,11 @@
+{
+  "name": "signalserver",
+  "version": "1.0.0",
+  "description": "Sample signal server for WebRTC",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kocsistem Pixage",
+  "license": "ISC"
+}
