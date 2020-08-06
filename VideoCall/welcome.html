@@ -1,0 +1,36 @@
+<html>
+<head>
+    <script src="js/jquery-3.5.1.min.js"></script>
+    <script src="js/socket-io.js"></script>
+</head>
+<body>
+
+
+<script>
+
+    var userName = "";
+    const socket = io('http://signalserverAzureaddress'); // TODO
+
+    $(document).ready(function(){
+      
+
+       socket.on("connect", function () {
+            console.log("sunucuya baglandim");
+            socket.emit("login",userName);
+
+        });
+
+        socket.on("welcome", function(){
+        });
+
+
+        
+        console.log("document is ready");
+    });
+
+    
+</script>
+Hello World
+
+</body>
+</html>
