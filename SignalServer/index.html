@@ -1,0 +1,52 @@
+<html>
+    <head>
+
+    <script src="public/js/jquery-3.5.1.min.js"></script>
+    <script src="public/js/pixage.network.request.js"></script>
+    <script src="public/js/pixage.platform.network.request.js"></script>
+
+    </head>
+    <body style="width:100%; height:100%;">
+<script>
+
+    $(document).ready(function(){
+        
+
+        var currentUrl = window.location.href;
+        console.log(currentUrl);
+
+        if(currentUrl.slice(-1) !== "/")
+        currentUrl += "/";
+
+        var options = {
+                    url: currentUrl+"users",
+                    contentType: 'application/json; charset=UTF-8',
+                    dataType: "json",
+                    method: "GET",
+                    headers: "",
+                    timeout: 20000
+                };
+
+                networkRequest = new PXC_Platform_Network_Request(options,
+                    function (data) { 
+                        console.log("fetched users:"+JSON.stringify(data));   
+                    },                     
+                    function (data) {  
+                        console.log("error:");
+                        console.log(data);
+                     },
+                    null);
+
+                networkRequest.setOptions(options);
+                networkRequest.beginRequest();
+
+                console.log("document is ready, will fetch users from server");
+    });
+
+
+
+</script>
+
+    Welcome to WebRTC Signal Server
+    </body>
+</html>
