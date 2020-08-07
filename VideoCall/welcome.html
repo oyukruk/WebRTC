@@ -15,7 +15,8 @@
 <script>
 
     var userName = "Ece";
-    const socket = io('http://signalserverAzureaddress'); // TODO
+    const socket = io('https://webrtc-signalserver.azurewebsites.net');
+ //const socket = io('http://localhost:3002');
     
 
     $(document).ready(function(){
@@ -23,15 +24,13 @@
         document.getElementById("greet").innerHTML = "Hosgeldin " + userName;
 
         socket.on("connect", function () {
-            console.log("sunucuya baglandim");
-            socket.emit("login",userName);
+            console.log("sunucuya baglandim");            
 
         });
 
         socket.on("welcome", function(){
+            socket.emit("login","ece");    // TO DO : PASS USER NAME        
         });
-
-
         
         console.log("document is ready");
     });
