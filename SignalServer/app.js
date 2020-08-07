@@ -9,8 +9,6 @@ const bodyParser = require('body-parser');
 var usersArray = [];
 
 
-
-
 var localMode = false;
 
 var options = {
@@ -74,6 +72,7 @@ app.get('/users', function (req, res) {
 
 console.log("Listening for incoming connections on port:"+expressServerPort);
 
+//Gorkem
 
 io.on('connection', (socket) => {
 
@@ -82,7 +81,11 @@ io.on('connection', (socket) => {
 
   socket.on('login', (username) => {
 
-    usersArray.push({username:username, socketId:socket.id});
+    var userObject = {};
+    userObject.username = username;
+    userObject.socketId = socket.id;
+
+    usersArray.push(userObject);
 
     console.log("saved user:"+username);
   });
