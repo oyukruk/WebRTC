@@ -14,7 +14,14 @@
 
 <script>
 
-    var userName = "Ece";
+var userName = "";
+
+var urlParams = new URLSearchParams(location.search);
+
+if(urlParams.has('username')) {
+    userName = String(urlParams.get('username'));
+}
+        
     const socket = io('https://webrtc-signalserver.azurewebsites.net');
  //const socket = io('http://localhost:3002');
     
@@ -29,7 +36,7 @@
         });
 
         socket.on("welcome", function(){
-            socket.emit("login","ece");    // TO DO : PASS USER NAME        
+            socket.emit("login",userName);    // TO DO : PASS USER NAME        
         });
         
         console.log("document is ready");
