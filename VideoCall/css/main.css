@@ -47,3 +47,53 @@
     color: #336ea2;
 }
 
+#greet{
+    margin-top: 0;
+    margin:1rem 1.5rem;
+    font-size: 1.75rem;
+    font-style: italic;
+    font-weight: bold;
+}
+
+#camera{
+    width: 640px;
+    height: 480px;
+    margin-top: 1rem;
+    margin-left: 10rem;
+    margin-bottom: 2rem;
+    border: 8px outset  black;
+}
+
+.welcome-form{
+    margin-top: 50px;
+    margin-left: 10%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#callName{
+    margin-right: 1.5rem;
+    width: 15rem;
+    text-align: center;
+    resize: none;
+}
+
+.buttonCall{
+    width: 15rem;
+    font-weight: 700;
+    font-style: italic;
+    text-align: center;
+    color:green;
+    border: 1px solid black;
+    border-radius: 6px;
+}
+
+.buttonCall:hover{
+    background:green;
+    color: white;
+}
+
+
+
+
