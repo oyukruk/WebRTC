@@ -12,6 +12,7 @@
 <script>
 
 var userName = "";
+var userToCall = "";
 
 var urlParams = new URLSearchParams(location.search);
 
@@ -25,15 +26,36 @@ if(urlParams.has('username')) {
 
     $(document).ready(function(){
       
-        document.getElementById("greet").innerHTML = "Hosgeldin " + userName;
+         
+        $("#callButton").on("click",function(){
+            userToCall = document.getElementById("nameInput").value;
+            if(userToCall.length>0){
+                document.getElementById("greet").innerHTML = "Calling " + userToCall;
+                socket.emit("offer",userToCall);     
+            }
+            else{
+                alert("Username of the user you want to call is required.");
+            }
+        });
+
+
+        socket.on("offer", function () {
+            //when somebody wants to call us 
+
+        });
+
 
         socket.on("connect", function () {
-            console.log("sunucuya baglandim");            
+            console.log("sunucuya baglandim");   
+            document.getElementById("greet").innerHTML = "Hosgeldin " + userName;   //IF USERNAME DOESN'T EXIST         
 
         });
 
         socket.on("welcome", function(){
-            socket.emit("login",userName);    // TO DO : PASS USER NAME        
+            if(userName.length>0){
+                socket.emit("login",userName);
+            }
+                   
         });
         
         console.log("document is ready");
@@ -53,9 +75,9 @@ if(urlParams.has('username')) {
         <div class="welcome-form">
             <form>
                 <div class="welcome-group">
-                    <label for="callName">Enter Name:</label>
-                    <input type="name" name="callName" id="callName">
-                    <button type="submit" class="buttonCall">Call</button>
+                    <label for="callName" id="callNameLabel">Enter Name:</label>
+                    <input type="name" name="nameInput" id="nameInput">
+                    <button type="submit" class="buttonCall" id="callButton">Call</button>
                 </div>
 
             </form>
