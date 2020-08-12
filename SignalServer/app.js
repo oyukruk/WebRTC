@@ -1,5 +1,3 @@
-
-
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -23,7 +21,7 @@ process.argv.forEach(function (val, index, array) {
 
 var expressServerPort = process.env.PORT;
 
-if (localMode == true) {  
+if (localMode == true) {
   expressServerPort = 3002;
   selfApiUrl = "http://localhost:" + expressServerPort + "/";
   app.use('/public', express.static('public', options));
@@ -63,59 +61,95 @@ app.get('/', function (req, res) {
 app.get('/users', function (req, res) {
 
   var responseData = {};
-  responseData.users = usersArray;  
+  responseData.users = usersArray;
   res.status(200);
   res.json(responseData);
 });
 
 
 
-console.log("Listening for incoming connections on port:"+expressServerPort);
+console.log("Listening for incoming connections on port:" + expressServerPort);
 
 //Gorkem
 
 io.on('connection', (socket) => {
-
   socket.emit("welcome");
   console.log('a user connected');
 
   socket.on('login', (username) => {
-
     var userObject = {};
     userObject.username = username;
     userObject.socketId = socket.id;
+    var generatedUsername = "Anonymous";
+    var validation = true;
 
-    usersArray.push(userObject);
-
-    console.log("saved user:"+username);
-  });
-
-  socket.on("disconnect", function(){
-    var foundUserObjectToRemove = false;
-    var userObjectToBeRemoved = -1;
-    for(var II=0; II<usersArray.length; II++)
-    {
-      var userObject = usersArray[II];
-
-      if(userObject.socketId == socket.id)
-      {
-        foundUserObjectToRemove = true;
-        userObjectToBeRemoved = userObject;
+    if (userObject.username == "") {
+      socket.emit("emptyUsername", generatedUsername);
+      userObject.username = generatedUsername;
+      usersArray.push(newUser);
+      socket.emit("saved user:" + userObject.username);
+    } else {
+    for (let index = 0; index < usersArray.length; index++) {
+      var nextUser = usersArray[II];
+      if (nextUser.username == userObject.username && nextUser.username != generatedUsername) {
+        socket.emit("Username Exists");
+        validation = false;
         break;
       }
-
     }
-    if(foundUserObjectToRemove == true)
-      removeElement(usersArray,userObjectToBeRemoved);
+    if(validation){
+      usersArray.push(userObject);
+      socket.emit("saved user:" + userObject.username);
+    }
+  }});
+    
+  socket.on("leave", function () {
+    var foundUserObjectToRemove = false;
+    var userObjectToBeRemoved = -1;
+    for (var II = 0; II < usersArray.length; II++) {
+      var nextUser = usersArray[II];
+      if (nextUser.socketId == userObject.socketId) {
+        foundUserObjectToRemove = true;
+        userObjectToBeRemoved = nextUser;
+        break;
+      }
+    }
+    if (foundUserObjectToRemove == true)
+      removeElement(usersArray, userObjectToBeRemoved);
+  });
+
+  socket.on("offer", function (usernameToCall) {
+    console.log("Sending offer to: ", socket.username);
+    var targetUser;
+    var offerCheck = false;
+    for (let index = 0; index < usersArray.length; index++) {
+      var currentUser = usersArray[index];
+      if (currentUser.username == usernameToCall) {
+        targetUser = currentUser;
+        offerCheck = true;
+        socket.emit("Sending offer to : " + targetUser.username);
+        break;
+      }
+    }
+    if(offerCheck == false){
+       socket.emit("No such user : " + usernameToCall);
+    }
+  });
+  
+  socket.on("answer", function() {
+            
+  });
+
+  socket.on("candidate", function(){
+
   });
 });
 
 
 function removeElement(array, elem) {
-
-  console.log("removing object from array:"+JSON.stringify(elem));
+  console.log("removing object from array:" + JSON.stringify(elem));
   var index = array.indexOf(elem);
   if (index > -1) {
-      array.splice(index, 1);
+    array.splice(index, 1);
   }
-}
+};
