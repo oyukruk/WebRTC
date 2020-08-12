@@ -79,7 +79,9 @@ io.on('connection', (socket) => {
   socket.on('login', (username) => {
     var userObject = {};
     userObject.username = username;
+    userObject.socket = socket;
     userObject.socketId = socket.id;
+
     var generatedUsername = "Anonymous";
     var validation = true;
 
@@ -119,21 +121,59 @@ io.on('connection', (socket) => {
   });
 
   socket.on("offer", function (usernameToCall) {
-    console.log("Sending offer to: ", socket.username);
-    var targetUser;
-    var offerCheck = false;
+
+    var callerUserObject = 0;
+    var offeredUserObject = 0;
+
+    //elimizdeki arrayde dönüyoruz
     for (let index = 0; index < usersArray.length; index++) {
-      var currentUser = usersArray[index];
-      if (currentUser.username == usernameToCall) {
-        targetUser = currentUser;
-        offerCheck = true;
-        socket.emit("Sending offer to : " + targetUser.username);
-        break;
-      }
+        var user = usersArray[index];
+        //eğer arraydeki user objelerinden, socket id'si bu event'e gelen socket id ile eşitse
+        //ilgili user objesi, bu eventi tetikleyen; yani offerı yapan user oluyor. (arayan kişi)
+        if(user.socketId == socket.id)
+        {
+          callerUserObject = user;
+        }
+
+        //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
+        //ilgili user objesi, aranmak istenen usera denk geliyor
+        if(user.username == usernameToCall)
+        {
+          offeredUserObject = user;
+        }
+
+
+        if(!callerUserObject && !offeredUserObject)
+          break;
     }
-    if(offerCheck == false){
-       socket.emit("No such user : " + usernameToCall);
+
+    //loop bitti, fakat aramayı yapmak isteyen kullanıcının objesini arrayde bulamadım.
+    if(!callerUserObject)
+    {
+      var errorObject = {};
+      errorObject.errorDescription = "Aramayı yapmak isteyen kullanıcıyı bulamadım, lütfen tekrar giriş yapınız.";
+      errorObject.errorCode = "ERR-USER-001";
+      socket.emit("signalServerError", errorObject);
+
+      console.log("callUserObject is null, terminating.");
+      return;
     }
+
+    //loop bitti, fakat aranmak istenen kullanıcının objesini arrayde bulamadım.
+    if(!offeredUserObject)
+    {
+      var errorObject = {};
+      errorObject.errorDescription = "Aranmak istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
+      errorObject.errorCode = "ERR-USER-002";
+      socket.emit("signalServerError", errorObject);
+
+      console.log("offeredUserObject is null, terminating.");
+      return;
+    }
+
+    //Ece'nin Mert'i aramak istediği senaryoda:
+    //MertUser.socket.emit('offer', EceUser.username)    
+    offeredUserObject.socket.emit("offer",callerUserObject.username);
   });
   
   socket.on("answer", function() {
