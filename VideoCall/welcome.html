@@ -39,27 +39,34 @@ if(urlParams.has('username')) {
         console.log("document is ready");
     });
 
+
     
 </script>
 
-<div id="welcome">
+<div id="greet">
     <h1 id="greet"></h1>
 </div>
-
-<div id="camera">
-    <video autoplay></video>  
+ 
 </div>
-    <section id="welcomeCall">
         <div class="welcome-form">
+            <div id="camera">
+                <video autoplay></video> 
+
             <form>
                 <div class="welcome-group">
                     <label for="callName">Enter Name:</label>
                     <input type="name" name="callName" id="callName">
                     <button type="submit" class="buttonCall">Call</button>
                 </div>
-
             </form>
         </div>
-    </section>
+    </div>
+
+        <div id="answer" style="visibility: hidden;">
+            <button id="confirm">Confirm</button>
+            <button id="ignore">Ignore</button>
+        </div>
+
+
 </body>
 </html>

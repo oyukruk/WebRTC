@@ -1,3 +1,7 @@
+body{
+    background:#B0C4DE;
+}
+
 #home{
     margin-top: 15rem;
     color:black;
@@ -54,29 +58,32 @@
     font-style: italic;
     font-weight: bold;
 }
-
-#camera{
-    width: 640px;
-    height: 480px;
-    margin-top: 1rem;
-    margin-left: 10rem;
-    margin-bottom: 2rem;
-    border: 8px outset  black;
-}
-
 .welcome-form{
-    margin-top: 50px;
-    margin-left: 10%;
+    width: 100%;
+    margin: 0 auto;
     display: flex;
     flex-direction: row;
     align-items: center;
 }
 
+#camera{
+    width: 640px;
+    height: 480px;
+
+    margin: 0 auto;
+    border: 4px solid  black;
+}
+
+.welcome-group{
+    margin-top: 0.5rem;
+    margin-left: 1rem;
+}
+
 #callName{
-    margin-right: 1.5rem;
-    width: 15rem;
-    text-align: center;
-    resize: none;
+    width: 35%;
+    margin-left: 0.25rem;
+    margin-right: 3rem;
+    border-radius: 6px;
 }
 
 .buttonCall{
@@ -93,6 +100,37 @@
     background:green;
     color: white;
 }
+
+#answer{
+    width: 100%;
+    height: 50px;
+    margin-top: 3%;
+    display: flex;
+    align-items: center;
+    z-index: 1;    
+    justify-content: center;
+} 
+
+#confirm{
+    width: 10rem;
+    font-weight: bold;
+    font-style: italic;
+    text-align: center;
+    background: green;
+    visibility: none;
+    margin-right: 1rem;
+    border-radius: 6px;
+}
+
+#ignore{
+    width: 10rem;
+    text-align: center;
+    background: red;
+    font-style: italic;
+    font-weight: bold;
+    visibility: none;
+    margin-right: 1rem;
+    border-radius: 6px;}
 
 
 
