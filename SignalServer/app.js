@@ -60,10 +60,12 @@ app.get('/', function (req, res) {
 
 app.get('/users', function (req, res) {
 
+
   var responseData = {};
   responseData.users = usersArray;
   res.status(200);
   res.json(responseData);
+
 });
 
 
@@ -78,44 +80,48 @@ io.on('connection', (socket) => {
 
   socket.on('login', (username) => {
     var userObject = {};
-    userObject.username = username;
-    userObject.socket = socket;
+    userObject.username = username;    
     userObject.socketId = socket.id;
 
     var generatedUsername = "Anonymous";
-    var validation = true;
 
     if (userObject.username == "") {
       socket.emit("emptyUsername", generatedUsername);
       userObject.username = generatedUsername;
-      usersArray.push(newUser);
-      socket.emit("saved user:" + userObject.username);
-    } else {
-    for (let index = 0; index < usersArray.length; index++) {
-      var nextUser = usersArray[II];
+      usersArray.push(userObject);      
+    } 
+    else {
+   
+      for (let index = 0; index < usersArray.length; index++) {
+      var nextUser = usersArray[index];
       if (nextUser.username == userObject.username && nextUser.username != generatedUsername) {
-        socket.emit("Username Exists");
-        validation = false;
-        break;
+        socket.emit("signalServerError", {errorDescription: "Baglanmak istenen kullanıcı adına sahip bir kullanıcı zaten bulunuyor.", errorCode:"ERR-USER-003"});
+        return;
       }
     }
-    if(validation){
-      usersArray.push(userObject);
-      socket.emit("saved user:" + userObject.username);
-    }
+
+    usersArray.push(userObject);
+    socket.emit("saved user:" + userObject.username);
+    
   }});
     
-  socket.on("leave", function () {
+  socket.on("disconnect", function () {
     var foundUserObjectToRemove = false;
     var userObjectToBeRemoved = -1;
+
+
     for (var II = 0; II < usersArray.length; II++) {
       var nextUser = usersArray[II];
-      if (nextUser.socketId == userObject.socketId) {
+
+
+      if (nextUser.socketId == socket.id) {
         foundUserObjectToRemove = true;
         userObjectToBeRemoved = nextUser;
         break;
       }
     }
+
+
     if (foundUserObjectToRemove == true)
       removeElement(usersArray, userObjectToBeRemoved);
   });
@@ -173,7 +179,7 @@ io.on('connection', (socket) => {
 
     //Ece'nin Mert'i aramak istediği senaryoda:
     //MertUser.socket.emit('offer', EceUser.username)    
-    offeredUserObject.socket.emit("offer",callerUserObject.username);
+    io.of("/").connected[offeredUserObject.socketId].emit("offer",callerUserObject.username);
   });
   
   socket.on("answer", function() {
@@ -187,7 +193,7 @@ io.on('connection', (socket) => {
 
 
 function removeElement(array, elem) {
-  console.log("removing object from array:" + JSON.stringify(elem));
+  console.log("removing object from array. username:" + elem.username+" socketId:"+elem.socketId);
   var index = array.indexOf(elem);
   if (index > -1) {
     array.splice(index, 1);

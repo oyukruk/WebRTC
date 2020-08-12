@@ -30,8 +30,9 @@ if(urlParams.has('username')) {
         $("#callButton").on("click",function(){
             userToCall = document.getElementById("nameInput").value;
             if(userToCall.length>0){
-                document.getElementById("greet").innerHTML = "Calling " + userToCall;
+                document.getElementById("greet").innerHTML = "Calling " + userToCall;                
                 socket.emit("offer",userToCall);     
+                console.log("emitting offer for:"+userToCall);
             }
             else{
                 alert("Username of the user you want to call is required.");
@@ -39,10 +40,19 @@ if(urlParams.has('username')) {
         });
 
 
-        socket.on("offer", function () {
+        socket.on("offer", function (callerUsername) {
             //when somebody wants to call us 
 
+            alert(callerUsername+" is calling you");
+
         });
+
+        socket.on("signalServerError", function(error){
+
+            console.log("signal server error:"+JSON.stringify(error));
+
+        });
+
 
 
         socket.on("connect", function () {
@@ -74,13 +84,13 @@ if(urlParams.has('username')) {
             <div id="camera">
                 <video autoplay></video> 
 
-            <form>
+            
                 <div class="welcome-group">
                     <label for="callName" id="callNameLabel">Enter Name:</label>
                     <input type="name" name="nameInput" id="nameInput">
-                    <button type="submit" class="buttonCall" id="callButton">Call</button>
+                    <button type="button" class="buttonCall" id="callButton">Call</button>
                 </div>
-            </form>
+            
         </div>
     </div>
 

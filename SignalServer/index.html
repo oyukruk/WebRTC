@@ -1,6 +1,6 @@
 <html>
     <head>
-
+        <title>Signal Server</title>
     <script src="public/js/jquery-3.5.1.min.js"></script>
     <script src="public/js/pixage.network.request.js"></script>
     <script src="public/js/pixage.platform.network.request.js"></script>
@@ -28,7 +28,7 @@
                 };
 
                 networkRequest = new PXC_Platform_Network_Request(options,
-                    function (data) { 
+                    function (data) {                    
                         console.log("fetched users:"+JSON.stringify(data));   
                     },                     
                     function (data) {  
