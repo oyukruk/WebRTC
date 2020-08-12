@@ -108,7 +108,7 @@ io.on('connection', (socket) => {
       }
 
       usersArray.push(userObject);
-      socket.emit("saved user:" + userObject.username);
+      socket.emit("userSaved" , userObject.username);
 
     }
   });

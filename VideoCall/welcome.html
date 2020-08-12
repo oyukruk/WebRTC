@@ -41,24 +41,55 @@ if(urlParams.has('username')) {
 
 
         socket.on("offer", function (callerUsername) {
+            
             //when somebody wants to call us 
 
             alert(callerUsername+" is calling you");
+
+            var accepted;
+
+            var r = confirm("Incoming call from " + callerUsername);
+            if (r == true) {
+                accepted = true;
+            } else {
+                accepted = false;
+            }
+
+            if(accepted) {
+                //call accepted 
+                //socket.emit( ?? );
+
+            }
+            else {
+                //declined
+                //socket.emit( ?? );
+            }
 
         });
 
         socket.on("signalServerError", function(error){
 
             console.log("signal server error:"+JSON.stringify(error));
+            alert(error.errorDescription);
+
+        });
+
+        socket.on("emptyUsername", function(){
+            
+            alert("Username is required.");
+            //index.html'e yonlendirme ?
 
         });
 
 
-
         socket.on("connect", function () {
             console.log("sunucuya baglandim");   
-            document.getElementById("greet").innerHTML = "Hosgeldin " + userName;   //IF USERNAME DOESN'T EXIST         
+                    
 
+        });
+
+        socket.on("userSaved" , function (username) {
+            document.getElementById("greet").innerHTML = "Hosgeldin " + username;  //username'i bu form sayfasından değil serverdan aldım.
         });
 
         socket.on("welcome", function(){
