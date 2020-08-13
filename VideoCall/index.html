@@ -26,43 +26,15 @@
 
         });
         
-/*
-        function form_kontrol(){
-            if(document.getElementById("name").textContent.length ==0){
-                document.getElementsByClassName(".buttonsubmit").disabled=true;
-                console.log("if");
-            }else{
-                document.getElementsByClassName(".buttonsubmit").disabled=false;
-                console.log("else")
-            }
-        }
-
-        form_kontrol();
-*/
-
-/*
-        function myFunction(){
-            var x=document.getElementById("form").hasAttribute("action");
-
-            if(x == true){
-                console.log("true");
-            }
-            else{
-                console.log("false");
-            }
-
-        }
-        onkeypress="myFunction()"
-        */
     </script>
 
     <section id="home">
         <div class="home-form">
             <form id="form" action="welcome.html" >
                 <div class="form-group">
-                    <label for="username">Name</label>
-                    <textarea name="username" class="form-control" id="txtName"
-                    rows="10"
+                    <label for="txtName">Name</label>
+                    <textarea name="txtName" class="form-control" id="txtName"
+                    rows="2"
                     placeholder="Typing Your Name..."></textarea>
                 </div>
                 <input type="button" id="btnSubmit" class="buttonsubmit" value="Login" />                
