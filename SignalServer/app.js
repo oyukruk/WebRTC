@@ -80,8 +80,8 @@ io.on('connection', (socket) => {
   //offer olan durumda answer geçişi için
   var isOffered = true;
   //answerda kullanmak için globale çektim
-  var callerUserObject = 0;
   var offeredUserObject = 0;
+  var callerUserObject = 0;
 
   socket.on('login', (username) => {
     var userObject = {};
@@ -136,7 +136,7 @@ io.on('connection', (socket) => {
 
   socket.on("offer", function (usernameToCall) {
 
-
+    
     //elimizdeki arrayde dönüyoruz
     for (let index = 0; index < usersArray.length; index++) {
       var user = usersArray[index];
@@ -183,12 +183,12 @@ io.on('connection', (socket) => {
     io.of("/").connected[offeredUserObject.socketId].emit("offer", callerUserObject.username);
   });
 
-  socket.on("answer", function () {
+  socket.on("answer", function() {
 
     if(isOffered)
     {
-      socket.emit("answer",callerUserObject.username);
       console.log("answering : " + callerUserObject.username);
+      io.of("/").connected[callerUserObject.socketId].emit("answer", offeredUserObject);
     }
     else
     {
@@ -201,7 +201,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on("candidate", function () {
-
+  
   });
 });
 
