@@ -79,6 +79,7 @@ io.on('connection', (socket) => {
   console.log('a user connected');
   //offer olan durumda answer geçişi için
   var isOffered = true;
+  var isAnswered = false;
   //answerda kullanmak için globale çektim
   var offeredUserObject = 0;
   var callerUserObject = 0;
@@ -187,8 +188,9 @@ io.on('connection', (socket) => {
 
     if(isOffered)
     {
-      console.log("answering : " + callerUserObject.username);
       io.of("/").connected[callerUserObject.socketId].emit("answer", offeredUserObject);
+      console.log("answering : " + callerUserObject.username); 
+      isAnsvered = true;
     }
     else
     {
@@ -200,8 +202,18 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on("candidate", function () {
-  
+  socket.on("candidate", function(user){
+
+if(isAnswered){
+  io.of("/").connected[user.socketId].emit("candidate", user.candidate);
+  console.log("Generating a candidate for : " + user.username);
+} else {
+  var errorObject = {};
+  errorObject.errorDescription = "Candidate oluşturamıyorum, lütfen daha sonra tekrar deneyiniz.";
+  errorObject.errorCode = "ERR-USER-004";
+  socket.emit("signalServerError", errorObject);
+  console.log("can't generate a candidate, terminating.");
+}
   });
 });
 
