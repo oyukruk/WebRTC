@@ -14,10 +14,12 @@
 var userName = "";
 var userToCall = "";
 
+var peerConnection = 0;
+
 var urlParams = new URLSearchParams(location.search);
 
-if(urlParams.has('username')) {
-    userName = String(urlParams.get('username'));
+if(urlParams.has('txtName')) {
+    userName = String(urlParams.get('txtName'));
 }
         
     const socket = io('https://webrtc-signalserver.azurewebsites.net');
@@ -25,6 +27,11 @@ if(urlParams.has('username')) {
     
 
     $(document).ready(function(){
+
+        const constraints = {audio: true, video: true};
+        const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
+
+        peerConnection = new RTCPeerConnection(configuration);
       
          
         $("#callButton").on("click",function(){
@@ -44,8 +51,6 @@ if(urlParams.has('username')) {
             
             //when somebody wants to call us 
 
-            alert(callerUsername+" is calling you");
-
             var accepted;
 
             var r = confirm("Incoming call from " + callerUsername);
@@ -56,9 +61,9 @@ if(urlParams.has('username')) {
             }
 
             if(accepted) {
+                socket.emit("answer",callerUsername);
                 //call accepted 
                 //socket.emit( ?? );
-
             }
             else {
                 //declined
@@ -69,8 +74,7 @@ if(urlParams.has('username')) {
 
         socket.on("signalServerError", function(error){
 
-            console.log("signal server error:"+JSON.stringify(error));
-            alert(error.errorDescription);
+            console.log("signal server error:"+JSON.stringify(error));            
 
         });
 
@@ -89,18 +93,124 @@ if(urlParams.has('username')) {
         });
 
         socket.on("userSaved" , function (username) {
+            console.log("userSaved:"+username);
             document.getElementById("greet").innerHTML = "Hosgeldin " + username;  //username'i bu form sayfasından değil serverdan aldım.
         });
 
         socket.on("welcome", function(){
+            console.log("welcome. will login with:"+userName);
             if(userName.length>0){
                 socket.emit("login",userName);
             }
                    
         });
+
+
+        socket.on("peer-offer", function(offerObject){
+
+            console.log("got peer offer from:"+offerObject.fromUsername+" to:"+offerObject.targetUsername+" SDP"+offerObject.SDP);
+
+
+            peerConnection.setRemoteDescription(offerObject.SDP).then(function () {
+                return navigator.mediaDevices.getUserMedia({video: true});
+
+                console.log("got SDP as:"+offerObject.SDP+" will attach to webcam stream");
+            })
+            .then(function(stream) {                
+                document.getElementById("remoteVideo").srcObject = stream;
+
+                return peerConnection.addStream(stream);
+            })
+            .then(function() {
+                return peerConnection.createAnswer();
+            })
+            .then(function(answer) {
+
+                console.log("created answer:"+JSON.stringify(answer));
+                return peerConnection.setLocalDescription(answer);
+            })
+            .then(function() {
+                console.log("created answer to peer offer, will send to signal server:"+JSON.stringify(peerConnection.localDescription));
+
+                offerObject.SDP = peerConnection.localDescription;
+                socket.emit("peer-answer",offerObject);
+
+
+                // Send the answer to the remote peer using the signaling server
+            })
+            .catch(function(error){
+
+                console.log("error?"+JSON.stringify(error));
+
+            });
+            
+
+        });
+
+        socket.on("peer-answer", function(offerObject)
+        {
+
+            console.log("got peer-answer:"+JSON.stringify(offerObject));
+
+            peerConnection.setRemoteDescription(offerObject.SDP);
+
+           // peerConnection.setLocalDescription(offerObject.SDP);
+
+        });
+
+
+        socket.on("answer", function(offeredUser){
+
+        console.log(offeredUser + " has accepted your call offer");
         
-        console.log("document is ready");
+        peerConnection.createOffer().then(function(offer) {
+            return peerConnection.setLocalDescription(offer);
+        })
+        .then(function() {
+            var peerOfferObject = {};
+
+            peerOfferObject.SDP = peerConnection.localDescription;
+            peerOfferObject.targetUsername = offeredUser;
+            peerOfferObject.fromUsername = userName;
+            
+            console.log(peerConnection.localDescription);
+
+            socket.emit("peer-offer",peerOfferObject);
+            console.log("promise hit");
+        })
+        .catch(function(reason) {
+            // An error occurred, so handle the failure to connect
+        });
+        
+
+        peerConnection.onicecandidate = ({candidate}) => {
+            console.log("ICE Candidate:"+candidate);
+        };
+
+        peerConnection.onnegotiationneeded = async () => {
+
+            try {
+
+                console.log("peer negotation needed?");
+                await peerConnection.setLocalDescription(await peerConnection.createOffer());
+                // send the offer to the other peer
+                console.log("onnegotiationneeded - local description:"+peerConnection.localDescription);                
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        peerConnection.ontrack = (event) => {
+
+            console.log("peer on track?");
+            // don't set srcObject again if it is already set.
+            var remoteView = $("#remoteVideo")[0];
+
+            if (remoteView.srcObject) return;
+            remoteView.srcObject = event.streams[0];
+        };
     });
+});
 
 
     
@@ -114,6 +224,8 @@ if(urlParams.has('username')) {
         <div class="welcome-form">
             <div id="camera">
                 <video autoplay></video> 
+
+                <video id="remoteVideo"></video>
 
             
                 <div class="welcome-group">
