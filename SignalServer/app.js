@@ -77,10 +77,6 @@ console.log("Listening for incoming connections on port:" + expressServerPort);
 io.on('connection', (socket) => {
   socket.emit("welcome");
   console.log('a user connected');
-  //offer olan durumda answer geçişi için
-  var isOffered = true;
-  var isAnswered = false;
-  //answerda kullanmak için globale çektim
   var offeredUserObject = 0;
   var callerUserObject = 0;
 
@@ -88,6 +84,8 @@ io.on('connection', (socket) => {
     var userObject = {};
     userObject.username = username;
     userObject.socketId = socket.id;
+    userObject.isOffered = false;
+    userObject.isAnswered = false;
     var generatedUsername = "Anonymous";
     
 
@@ -151,6 +149,7 @@ io.on('connection', (socket) => {
       //ilgili user objesi, aranmak istenen usera denk geliyor
       if (user.username.toLowerCase() == usernameToCall.toLowerCase()) {
         offeredUserObject = user;
+        offeredUserObject.isOffered = true;
       }
 
       if (!callerUserObject && !offeredUserObject)
@@ -163,7 +162,6 @@ io.on('connection', (socket) => {
       errorObject.errorDescription = "Aramayı yapmak isteyen kullanıcıyı bulamadım, lütfen tekrar giriş yapınız.";
       errorObject.errorCode = "ERR-USER-001";
       socket.emit("signalServerError", errorObject);
-      isOffered = false;
       console.log("callUserObject is null, terminating.");
       return;
     }
@@ -174,7 +172,6 @@ io.on('connection', (socket) => {
       errorObject.errorDescription = "Aranmak istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
       errorObject.errorCode = "ERR-USER-002";
       socket.emit("signalServerError", errorObject);
-      isOffered = false;
       console.log("offeredUserObject is null, terminating.");
       return;
     }
@@ -186,11 +183,11 @@ io.on('connection', (socket) => {
 
   socket.on("answer", function() {
 
-    if(isOffered)
+    if(offeredUserObject.isOffered)
     {
       io.of("/").connected[callerUserObject.socketId].emit("answer", offeredUserObject);
       console.log("answering : " + callerUserObject.username); 
-      isAnsvered = true;
+      callerUserObject.isAnswered = true;
     }
     else
     {
@@ -204,7 +201,7 @@ io.on('connection', (socket) => {
 
   socket.on("candidate", function(user){
 
-if(isAnswered){
+if(callerUserObject.isAnswered && offeredUserObject.isOffered){
   io.of("/").connected[user.socketId].emit("candidate", user.candidate);
   console.log("Generating a candidate for : " + user.username);
 } else {
