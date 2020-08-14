@@ -4,7 +4,7 @@
 <head>
     <script src="js/jquery-3.5.1.min.js"></script>
     <script src="js/socket-io.js"></script>
-    <script src="js/current-cam.js"></script>
+    <!--<script src="js/current-cam.js"></script>-->
     <meta charset = "utf-8" /> 
     <link rel="stylesheet" href="css/main.css">
 </head>
@@ -28,18 +28,96 @@ if(urlParams.has('txtName')) {
 
     $(document).ready(function(){
 
+        console.log("ready");
+
         const constraints = {audio: true, video: true};
         const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
 
         peerConnection = new RTCPeerConnection(configuration);
+
+
+        //ice candidate eventi - to-be discovered
+        peerConnection.onicecandidate = function(candidate){ 
+            console.log("ICE Candidate:"+JSON.stringify(candidate));
+        };
+
+        //peer objesinin bağlantı sağlayabilmesi için negotation needed eventi
+        peerConnection.onnegotiationneeded =function(){
+
+            try {
+
+               // await peerConnection.setLocalDescription(await peerConnection.createOffer());
+                // send the offer to the other peer
+                console.log("onnegotiationneeded - local description:"+JSON.stringify(peerConnection.localDescription));                
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        //peer objeme, gösterebileceği bir stream / track vb medya geldiğinde tetiklenen event
+        peerConnection.ontrack = function(event){
+
+            console.log("peer on track?");
+            
+            
+            var remoteView = $("#remoteVideo")[0];
+
+            //burada stream objesini 1 kere set etmem yeterli.
+            //streami set ettikten sonra data transferi yapılabildiği sürece zaten görüntü oynayacaktır
+            if (remoteView.srcObject) return;
+
+
+            remoteView.srcObject = event.streams[0];
+        };
+
+
+        //peer objemin connection state'i değiştiğinde tetiklenen event
+        peerConnection.onconnectionstatechange = function(event) {
+
+            console.log("peer connection state changed:"+peerConnection.connectionState);
+
+                //switch(peerConnection.connectionState) {
+                 //   case "connected":
+                    // The connection has become fully connected
+                 //   break;
+                 //   case "disconnected":
+                 //   case "failed":
+                    // One or more transports has terminated unexpectedly or in an error
+                 //   break;
+                 //   case "closed":
+                    // The connection has been closed
+                //    break;
+               // }
+        };
+
+
+        //peer objemin signaling state'i değiştiğinde tetiklenen event
+        peerConnection.onsignalingstatechange = function(event) {
+
+            console.log("peer signal state changed:"+JSON.stringify(peerConnection.signalingState));
+
+        };
       
          
         $("#callButton").on("click",function(){
+            
             userToCall = document.getElementById("nameInput").value;
             if(userToCall.length>0){
-                document.getElementById("greet").innerHTML = "Calling " + userToCall;                
-                socket.emit("offer",userToCall);     
-                console.log("emitting offer for:"+userToCall);
+
+                
+                //birini arayacağım zaman, kameramın görüntüsünü ekranımdaki <video> elemente basıyorum.
+                //aynı zamanda bu kamera görüntüsünü, peerConnection.addTrack diyerek peer objesine de ekliyorum
+                //sonra da aramak istediğim kişiye 'seni aramak istiyorum' şeklinde socket.io üzerinden talep gönderiyorum.
+                navigator.mediaDevices.getUserMedia({video:true})
+                    .then(function(localStream) {
+                        document.getElementById("video").srcObject = localStream;
+                        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                        document.getElementById("greet").innerHTML = "Calling " + userToCall;                
+                        socket.emit("offer",userToCall);     
+                        console.log("emitting offer for:"+userToCall);
+                    })
+
+               
             }
             else{
                 alert("Username of the user you want to call is required.");
@@ -47,6 +125,8 @@ if(urlParams.has('txtName')) {
         });
 
 
+        //beni aramak isteyen biri var.
+        //aramak isteyen kişi: callerUsername
         socket.on("offer", function (callerUsername) {
             
             //when somebody wants to call us 
@@ -60,6 +140,7 @@ if(urlParams.has('txtName')) {
                 accepted = false;
             }
 
+            //beni arayan kişinin isteğini kabul ediyorum
             if(accepted) {
                 socket.emit("answer",callerUsername);
                 //call accepted 
@@ -106,37 +187,52 @@ if(urlParams.has('txtName')) {
         });
 
 
+        //beni birisi aramak istemişti
+        //arama isteğini kabul etmiştim
+        //bana, oluşturmuş olduğu peer offer objesini ulaştırdı
+        //peer offer objesi : offerObject
         socket.on("peer-offer", function(offerObject){
 
-            console.log("got peer offer from:"+offerObject.fromUsername+" to:"+offerObject.targetUsername+" SDP"+offerObject.SDP);
+            var localStream = null;
+
+            console.log("got peer offer from:"+offerObject.fromUsername+" to:"+offerObject.targetUsername+" SDP"+ JSON.stringify(offerObject.SDP));
 
 
+            //beni aramak isteyen kişinin oluşturduğu, peer offer objesini
+            //kendi peer objemin "remote description" değeri olarak set ediyorum
             peerConnection.setRemoteDescription(offerObject.SDP).then(function () {
-                return navigator.mediaDevices.getUserMedia({video: true});
 
-                console.log("got SDP as:"+offerObject.SDP+" will attach to webcam stream");
+                //kendi kamera görüntümü alıyorum
+                return navigator.mediaDevices.getUserMedia({video: true});
             })
             .then(function(stream) {                
-                document.getElementById("remoteVideo").srcObject = stream;
+                //document.getElementById("remoteVideo").srcObject = stream;
+                localStream = stream;
 
-                return peerConnection.addStream(stream);
-            })
-            .then(function() {
+                //kendi kamera görüntümü ekrandaki <video> elemente basıyorum
+                document.getElementById("video").srcObject = localStream;
+
+                //kendi kamera görüntümü, oluşturmuş olduğum peer objesine track olarak ekliyorum -ki transfer edilebilsin
+                localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+                console.log("peerConnection.signalingState "+ peerConnection.signalingState);
+
+                //bana yapılan arama isteği için bir peer answer yaratıyorum
                 return peerConnection.createAnswer();
             })
             .then(function(answer) {
 
-                console.log("created answer:"+JSON.stringify(answer));
-                return peerConnection.setLocalDescription(answer);
+                //yarattığım peer answer değerini
+                //kendi peer objemin local description değeri olacak şekilde set ediyorum
+                return peerConnection.setLocalDescription(new RTCSessionDescription(answer));
             })
             .then(function() {
                 console.log("created answer to peer offer, will send to signal server:"+JSON.stringify(peerConnection.localDescription));
 
                 offerObject.SDP = peerConnection.localDescription;
+
+                //yaratmış olduğum peer answer objesini, beni aramak isteyen kişi benimle bağlantı kurabilsin diye
+                //signal serverım üzerinden iletiyorum
                 socket.emit("peer-answer",offerObject);
-
-
-                // Send the answer to the remote peer using the signaling server
             })
             .catch(function(error){
 
@@ -147,73 +243,58 @@ if(urlParams.has('txtName')) {
 
         });
 
+
+        //aramak istediğim kişi, peer answer objesini oluşturarak bana iletti
         socket.on("peer-answer", function(offerObject)
         {
+            
+            console.log("got peer-answer:"+JSON.stringify(offerObject)+" peer connection state:"+peerConnection.signalingState);
 
-            console.log("got peer-answer:"+JSON.stringify(offerObject));
-
-            peerConnection.setRemoteDescription(offerObject.SDP);
-
-           // peerConnection.setLocalDescription(offerObject.SDP);
+            //bana gelen peer answer objesini, kendi peerıma remoteDescription değeri olarak set ediyorum
+            peerConnection.setRemoteDescription(new RTCSessionDescription(offerObject.SDP));           
 
         });
 
 
+        //birini aramak istemiştim
+        //arama isteğimi kabul etti
+        //arama isteğimi kabul eden kişi : offeredUser
         socket.on("answer", function(offeredUser){
 
         console.log(offeredUser + " has accepted your call offer");
         
+        //görüntü transferini başlatabilmek için
+        //peerConnection'a createOffer diyorum
         peerConnection.createOffer().then(function(offer) {
-            return peerConnection.setLocalDescription(offer);
+
+            console.log("Created offer object:"+JSON.stringify(offer));
+
+            //Oluşturulan offerı, peerConnectionımın 'localDescription'ı olacak şekilde set ediyorum
+            return peerConnection.setLocalDescription(new RTCSessionDescription(offer));
         })
-        .then(function() {
+        //Offerım oluşturuldu
+        .then(function(){
+
             var peerOfferObject = {};
 
             peerOfferObject.SDP = peerConnection.localDescription;
             peerOfferObject.targetUsername = offeredUser;
-            peerOfferObject.fromUsername = userName;
+            peerOfferObject.fromUsername = userName;    
             
-            console.log(peerConnection.localDescription);
-
+            //Oluşturulan peer offer objesini, aramak istediğim kişiye iletmek için
+            //signal serverımı kullanarak emit ediyorum.
             socket.emit("peer-offer",peerOfferObject);
-            console.log("promise hit");
+
+            console.log("sending peer offer object to callee");
         })
         .catch(function(reason) {
+            console.log("error?"+reason);
             // An error occurred, so handle the failure to connect
         });
-        
-
-        peerConnection.onicecandidate = ({candidate}) => {
-            console.log("ICE Candidate:"+candidate);
-        };
-
-        peerConnection.onnegotiationneeded = async () => {
-
-            try {
-
-                console.log("peer negotation needed?");
-                await peerConnection.setLocalDescription(await peerConnection.createOffer());
-                // send the offer to the other peer
-                console.log("onnegotiationneeded - local description:"+peerConnection.localDescription);                
-            } catch (err) {
-                console.error(err);
-            }
-        };
-
-        peerConnection.ontrack = (event) => {
-
-            console.log("peer on track?");
-            // don't set srcObject again if it is already set.
-            var remoteView = $("#remoteVideo")[0];
-
-            if (remoteView.srcObject) return;
-            remoteView.srcObject = event.streams[0];
-        };
+                
     });
 });
 
-
-    
 </script>
 
 <div id="greet">
@@ -223,9 +304,9 @@ if(urlParams.has('txtName')) {
 </div>
         <div class="welcome-form">
             <div id="camera">
-                <video autoplay></video> 
+                <video id="video" autoplay></video> 
 
-                <video id="remoteVideo"></video>
+                <video id="remoteVideo" autoplay></video>
 
             
                 <div class="welcome-group">
