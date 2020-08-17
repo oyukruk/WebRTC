@@ -18,21 +18,35 @@ var callerUser = 0;
 
 var peerConnection = 0;
 
+var webRtcSupported = true;
+
 var urlParams = new URLSearchParams(location.search);
 
 if(urlParams.has('txtName')) {
+    
     userName = String(urlParams.get('txtName'));
 }
+
+function hasUserMedia() { 
+   //check if the browser supports the WebRTC 
+   return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || 
+      navigator.mozGetUserMedia); 
+} 
         
-    const socket = io('https://webrtc-signalserver.azurewebsites.net');
+    
  //const socket = io('http://localhost:3002');
     
 
     $(document).ready(function(){
-
-        console.log("ready");
-
+        $("body").append("document ready"); 
         
+       if (!hasUserMedia()) {
+        webRtcSupported = false;
+        alert("WebRTC is not supported");
+        }
+
+        const socket = io.connect('https://webrtc-signalserver.azurewebsites.net');
+
         $("#btnMute").on("click", function(){
 
             
@@ -43,7 +57,10 @@ if(urlParams.has('txtName')) {
 
             console.log("btnMute clicked. new mute value :"+video.muted);
 
-        });       
+        });     
+        
+        if(!webRtcSupported)
+            return;
 
         const constraints = {audio: true, video: true};
         const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
@@ -201,7 +218,7 @@ if(urlParams.has('txtName')) {
 
             try
             {
-            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
             }
             catch(error)
             {
