@@ -209,7 +209,7 @@ function hasUserMedia() {
             callerUser = callerUsername;
 
 
-            socket.emit("answer",callerUsername);
+            socket.emit("answer",answerObject);
 
         });
 
@@ -236,7 +236,7 @@ function hasUserMedia() {
 
         socket.on("declined", function(offeredUser){
 
-            alert("Call declined.");
+            alert(offeredUser + " rejected your call.");
         });
 
         socket.on("emptyUsername", function(){
@@ -339,7 +339,7 @@ function hasUserMedia() {
         //birini aramak istemiştim
         //arama isteğimi kabul etti
         //arama isteğimi kabul eden kişi : offeredUser
-        socket.on("answer", function(offeredUser){
+        socket.on("accepted", function(offeredUser){
 
         console.log(offeredUser + " has accepted your call offer");
         
