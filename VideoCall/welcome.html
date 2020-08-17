@@ -28,8 +28,10 @@ if(urlParams.has('txtName')) {
 }
 
 function hasUserMedia() { 
+    
+
    //check if the browser supports the WebRTC 
-   return !!(navigator.getUserMedia || navigator.webkitGetUserMedia || 
+   return !!(navigator.mediaDevices.getUserMedia || navigator.webkitGetUserMedia || 
       navigator.mozGetUserMedia); 
 } 
         
@@ -37,8 +39,7 @@ function hasUserMedia() {
  //const socket = io('http://localhost:3002');
     
 
-    $(document).ready(function(){
-        $("body").append("document ready"); 
+    $(document).ready(function(){        
         
        if (!hasUserMedia()) {
         webRtcSupported = false;
@@ -63,7 +64,7 @@ function hasUserMedia() {
             return;
 
         const constraints = {audio: true, video: true};
-        const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
+        const configuration = {iceServers: [{urls: 'stun:stun.l.google.com:19302'}]};
 
         peerConnection = new RTCPeerConnection(configuration);
 
@@ -385,9 +386,9 @@ function hasUserMedia() {
             <div id="camera">
                 <button id="btnMute">Mute/Unmute</button>
                 
-                <video id="video" autoplay muted></video> 
+                <video id="video" autoplay muted playsinline></video> 
 
-                <video id="remoteVideo" autoplay></video>
+                <video id="remoteVideo" autoplay playsinline></video>
 
             
                 <div class="welcome-group">
