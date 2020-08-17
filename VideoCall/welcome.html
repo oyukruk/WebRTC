@@ -12,7 +12,9 @@
 <script>
 
 var userName = "";
-var userToCall = "";
+var userToCall = 0;
+
+var callerUser = 0;
 
 var peerConnection = 0;
 
@@ -37,8 +39,35 @@ if(urlParams.has('txtName')) {
 
 
         //ice candidate eventi - to-be discovered
-        peerConnection.onicecandidate = function(candidate){ 
-            console.log("ICE Candidate:"+JSON.stringify(candidate));
+        peerConnection.onicecandidate = function(event){ 
+
+            try{
+
+                if(event.candidate)
+                {
+                    var candidateObject = {};
+                    candidateObject.candidate = event.candidate;
+                    candidateObject.fromUsername = userName;
+                    candidateObject.targetUsername =  userToCall ? userToCall : callerUser;
+
+                    socket.emit("send-candidate",candidateObject);
+
+                    console.log("ice candidate");
+                    console.log(event.candidate);
+                }
+                else
+                {
+                    console.log("empty candidate, sent all of them already.");
+                }
+
+            }
+            catch(err)
+            {
+                console.log("error:"+err);
+            }
+
+
+            console.log("ICE Candidate:"+JSON.stringify(event));
         };
 
         //peer objesinin bağlantı sağlayabilmesi için negotation needed eventi
@@ -108,7 +137,7 @@ if(urlParams.has('txtName')) {
                 //birini arayacağım zaman, kameramın görüntüsünü ekranımdaki <video> elemente basıyorum.
                 //aynı zamanda bu kamera görüntüsünü, peerConnection.addTrack diyerek peer objesine de ekliyorum
                 //sonra da aramak istediğim kişiye 'seni aramak istiyorum' şeklinde socket.io üzerinden talep gönderiyorum.
-                navigator.mediaDevices.getUserMedia({video:true})
+                navigator.mediaDevices.getUserMedia({video:true, audio:true})
                     .then(function(localStream) {
                         document.getElementById("video").srcObject = localStream;
                         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
@@ -144,8 +173,27 @@ if(urlParams.has('txtName')) {
             var answerObject = {};
             answerObject.caller = callerUsername;
             answerObject.accepted = accepted;
-            socket.emit("answer",answerObject);
 
+            callerUser = callerUsername;
+
+
+            socket.emit("answer",callerUsername);
+
+        });
+
+
+        socket.on("new-ice-candidate", function(candidate){
+
+
+            try
+            {
+            peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+            catch(error)
+            {
+                console.log("new-ice-candidate error:"+error);
+            }
+            
         });
 
         socket.on("signalServerError", function(error){
@@ -203,7 +251,7 @@ if(urlParams.has('txtName')) {
             peerConnection.setRemoteDescription(offerObject.SDP).then(function () {
 
                 //kendi kamera görüntümü alıyorum
-                return navigator.mediaDevices.getUserMedia({video: true});
+                return navigator.mediaDevices.getUserMedia({video: true, audio:true});
             })
             .then(function(stream) {                
                 //document.getElementById("remoteVideo").srcObject = stream;

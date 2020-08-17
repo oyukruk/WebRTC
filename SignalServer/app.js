@@ -82,32 +82,22 @@ io.on('connection', (socket) => {
     var userObject = {};
     userObject.username = username;
     userObject.socketId = socket.id;
-    userObject.isOffered = false;
-    userObject.isAnswered = false;
-    var generatedUsername = "Anonymous";
-    
 
-    if (userObject.username == "") {
-      socket.emit("emptyUsername", generatedUsername);
-      userObject.username = generatedUsername;
-      usersArray.push(userObject);
-    } else {
-
-      for (let index = 0; index < usersArray.length; index++) {
-        var nextUser = usersArray[index];
-        if (nextUser.username == userObject.username && nextUser.username != generatedUsername) {
-          socket.emit("signalServerError", {
-            errorDescription: "Baglanmak istenen kullanıcı adına sahip bir kullanıcı zaten bulunuyor.",
-            errorCode: "ERR-USER-003"
-          });
-          return;
-        }
+    for (let index = 0; index < usersArray.length; index++) {
+      var nextUser = usersArray[index];
+      if (nextUser.username.toLowerCase().trim() == userObject.username.toLowerCase().trim()) {
+        socket.emit("signalServerError", {
+          errorDescription: "Baglanmak istenen kullanıcı adına sahip bir kullanıcı zaten bulunuyor.",
+          errorCode: "ERR-USER-003"
+        });
+        return;
       }
+    }
 
       usersArray.push(userObject);
       socket.emit("userSaved", userObject.username);
 
-    }
+    
   });
 
   socket.on("disconnect", function () {
@@ -129,6 +119,8 @@ io.on('connection', (socket) => {
 
     if (foundUserObjectToRemove == true)
       removeElement(usersArray, userObjectToBeRemoved);
+        else
+      console.log("could not find a socket id to remove");
   });
 
 
@@ -236,9 +228,7 @@ io.on('connection', (socket) => {
         offeredUserObject = user;
         offeredUserObject.isOffered = true;
       }
-
-      if (!callerUserObject && !offeredUserObject)
-        break;
+     
     }
 
     //loop bitti, fakat aramayı yapmak isteyen kullanıcının objesini arrayde bulamadım.
@@ -268,11 +258,11 @@ io.on('connection', (socket) => {
     console.log(callerUserObject.username+" will try calling "+offeredUserObject.username);
   });
 
-  socket.on("answer", function(answerObject) {
+  socket.on("answer", function(username) {
 
     var offeredUserObject = 0;
     var callerUserObject = 0;
-    var accepted = answerObject.accepted;
+   // var accepted = answerObject.accepted;
 
     
     //elimizdeki arrayde dönüyoruz
@@ -286,12 +276,9 @@ io.on('connection', (socket) => {
 
       //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
       //ilgili user objesi, aranmak istenen usera denk geliyor
-      if (user.username.toLowerCase() == answerObject.caller.toLowerCase()) {
+      if (user.username.toLowerCase() == username.toLowerCase()) {
         callerUserObject = user;        
       }
-
-      if (!callerUserObject && !offeredUserObject)
-        break;
     }
 
     //loop bitti, fakat aramayı yapmak isteyen kullanıcının objesini arrayde bulamadım.
@@ -313,32 +300,10 @@ io.on('connection', (socket) => {
       console.log("offeredUserObject is null, terminating.");
       return;
     }
-
-
+    
     io.of("/").connected[callerUserObject.socketId].emit("answer", offeredUserObject.username);
     console.log("answering : " + callerUserObject.username); 
   });
-
-  if(accepted) {
-
-    socket.on("candidate", function(user){
-
-      if(callerUserObject.isAnswered && offeredUserObject.isOffered){
-        io.of("/").connected[user.socketId].emit("candidate", user.candidate);
-        console.log("Generating a candidate for : " + user.username);
-      } else {
-        var errorObject = {};
-        errorObject.errorDescription = "Candidate oluşturamıyorum, lütfen daha sonra tekrar deneyiniz.";
-        errorObject.errorCode = "ERR-USER-004";
-        socket.emit("signalServerError", errorObject);
-        console.log("can't generate a candidate, terminating.");
-      }
-        });
-  }
-
-  else {
-    io.of("/").connected[callerUserObject.socketId].emit("declined", offeredUserObject.username);
-  }
 
 });
 
