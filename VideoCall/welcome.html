@@ -140,16 +140,11 @@ if(urlParams.has('txtName')) {
                 accepted = false;
             }
 
-            //beni arayan kişinin isteğini kabul ediyorum
-            if(accepted) {
-                socket.emit("answer",callerUsername);
-                //call accepted 
-                //socket.emit( ?? );
-            }
-            else {
-                //declined
-                //socket.emit( ?? );
-            }
+            //sunucuya  beni arayan kişiyi ve cevabımı içeren obje gönderiyorum.
+            var answerObject = {};
+            answerObject.caller = callerUsername;
+            answerObject.accepted = accepted;
+            socket.emit("answer",answerObject);
 
         });
 
@@ -157,6 +152,11 @@ if(urlParams.has('txtName')) {
 
             console.log("signal server error:"+JSON.stringify(error));            
 
+        });
+
+        socket.on("declined", function(offeredUser){
+
+            alert("Call declined.");
         });
 
         socket.on("emptyUsername", function(){

@@ -268,10 +268,11 @@ io.on('connection', (socket) => {
     console.log(callerUserObject.username+" will try calling "+offeredUserObject.username);
   });
 
-  socket.on("answer", function(caller) {
+  socket.on("answer", function(answerObject) {
 
     var offeredUserObject = 0;
     var callerUserObject = 0;
+    var accepted = answerObject.accepted;
 
     
     //elimizdeki arrayde dönüyoruz
@@ -285,7 +286,7 @@ io.on('connection', (socket) => {
 
       //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
       //ilgili user objesi, aranmak istenen usera denk geliyor
-      if (user.username.toLowerCase() == caller.toLowerCase()) {
+      if (user.username.toLowerCase() == answerObject.caller.toLowerCase()) {
         callerUserObject = user;        
       }
 
@@ -318,19 +319,27 @@ io.on('connection', (socket) => {
     console.log("answering : " + callerUserObject.username); 
   });
 
-  socket.on("candidate", function(user){
+  if(accepted) {
 
-if(callerUserObject.isAnswered && offeredUserObject.isOffered){
-  io.of("/").connected[user.socketId].emit("candidate", user.candidate);
-  console.log("Generating a candidate for : " + user.username);
-} else {
-  var errorObject = {};
-  errorObject.errorDescription = "Candidate oluşturamıyorum, lütfen daha sonra tekrar deneyiniz.";
-  errorObject.errorCode = "ERR-USER-004";
-  socket.emit("signalServerError", errorObject);
-  console.log("can't generate a candidate, terminating.");
-}
-  });
+    socket.on("candidate", function(user){
+
+      if(callerUserObject.isAnswered && offeredUserObject.isOffered){
+        io.of("/").connected[user.socketId].emit("candidate", user.candidate);
+        console.log("Generating a candidate for : " + user.username);
+      } else {
+        var errorObject = {};
+        errorObject.errorDescription = "Candidate oluşturamıyorum, lütfen daha sonra tekrar deneyiniz.";
+        errorObject.errorCode = "ERR-USER-004";
+        socket.emit("signalServerError", errorObject);
+        console.log("can't generate a candidate, terminating.");
+      }
+        });
+  }
+
+  else {
+    io.of("/").connected[callerUserObject.socketId].emit("declined", offeredUserObject.username);
+  }
+
 });
 
 
