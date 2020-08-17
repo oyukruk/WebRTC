@@ -13,7 +13,7 @@
 
 
             $("#btnSubmit").on("click",function(){
-            var usernameValue = $("#txtName").val();            
+            var usernameValue = $("#txtName").val().replace("\r\n","").trim();            
 
             if(!usernameValue || usernameValue.length==0){
                 alert("Username cannot be empty.");

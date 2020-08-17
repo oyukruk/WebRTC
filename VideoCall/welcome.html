@@ -32,6 +32,19 @@ if(urlParams.has('txtName')) {
 
         console.log("ready");
 
+        
+        $("#btnMute").on("click", function(){
+
+            
+
+            var video=document.getElementById("remoteVideo");
+
+            video.muted = !video.muted;
+
+            console.log("btnMute clicked. new mute value :"+video.muted);
+
+        });       
+
         const constraints = {audio: true, video: true};
         const configuration = {iceServers: [{url: 'stun:stun.l.google.com:19302'}]};
 
@@ -132,6 +145,7 @@ if(urlParams.has('txtName')) {
             
             userToCall = document.getElementById("nameInput").value;
             if(userToCall.length>0){
+
 
                 
                 //birini arayacağım zaman, kameramın görüntüsünü ekranımdaki <video> elemente basıyorum.
@@ -352,7 +366,9 @@ if(urlParams.has('txtName')) {
 </div>
         <div class="welcome-form">
             <div id="camera">
-                <video id="video" autoplay></video> 
+                <button id="btnMute">Mute/Unmute</button>
+                
+                <video id="video" autoplay muted></video> 
 
                 <video id="remoteVideo" autoplay></video>
 
