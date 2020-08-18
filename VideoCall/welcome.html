@@ -11,6 +11,8 @@
     <meta charset = "utf-8" /> 
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/listbox.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css">
+
 </head>
 <body>
 <script>
@@ -53,6 +55,14 @@ function hasUserMedia() {
         const socket = io.connect('https://webrtc-signalserver.azurewebsites.net');
 
         $("#btnMute").on("click", function(){
+
+            var mute=document.getElementById("btnMute");
+            console.log("clicked");
+            if(mute.className = "fas fa-microphone"){
+                mute.className ="fas fa-microphone-alt-slash";
+                console.log("first if");
+                return;
+            }
 
             
 
@@ -424,17 +434,19 @@ function getSelectedUsername()
 </div>
         <div class="welcome-form">
             <div id="camera">
-                <button id="btnMute">Mute/Unmute</button>
-                
+
                 <video id="video" autoplay muted playsinline></video> 
 
                 <video id="remoteVideo" autoplay playsinline></video>
+
+                <button class="fas fa-microphone" id="btnMute"></button>
 
             
                 <div class="welcome-group">
                     <label for="callName" id="callNameLabel">Enter Name:</label>
                     <input type="name" name="nameInput" id="nameInput">
                     <button type="button" class="buttonCall" id="callButton">Call</button>
+                    <button type="button" class="buttonFinish" id="finishButton">Finish</button>
                 </div>
             
         </div>
@@ -447,6 +459,7 @@ function getSelectedUsername()
 
         <div id="userContainer" class="listbox-area">
             <div id="listHeader" class="left-area">
+            <i class="fa fa-users" aria-hidden="true"></i>
             <span id="ss_elem">Online Users:</span>
             
             
