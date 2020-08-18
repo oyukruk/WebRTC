@@ -104,7 +104,7 @@ io.on('connection', (socket) => {
     if (isPresent == false) {
       usersArray.push(userObject);
       socket.emit("userSaved", userObject.username);
-      updateUsers(usersArray);
+      updateUsers();
     }
   });
 
@@ -124,7 +124,7 @@ io.on('connection', (socket) => {
 
     if (foundUserObjectToRemove == true)
       removeElement(usersArray, userObjectToBeRemoved);
-      updateUsers(usersArray);
+      updateUsers();
   });
 
 
@@ -374,15 +374,17 @@ function removeElement(array, elem) {
   }
 };
 
-function updateUsers(usersArray) {
+function updateUsers() {
+
+  console.log("will notify updated sockets about latest usersArray. current usersArrayLength:"+usersArray.length);
   if (usersArray.length == 0) {
     var errorObject = {};
     errorObject.errorDescription = "Kayıtlı kullanıcı yok.";
     errorObject.errorCode = "ERR-USER-007";
-    socket.emit("signalServerError", errorObject);
+    io.sockets.emit("signalServerError", errorObject);
     console.log("There are no online users.");
   } else {
-    socket.emit("Online-Users", usersArray);
+    io.sockets.emit("online-Users", usersArray);
     console.log("Sending an array of online users");
   }
 };

@@ -17,6 +17,12 @@ var aria = aria || {};
  *  The DOM node pointing to the listbox
  */
 aria.Listbox = function (listboxNode) {
+
+  console.log("listBoxNode? "+listboxNode);
+
+  if(listboxNode == null)
+    return;
+
   this.listboxNode = listboxNode;
   this.activeDescendant = this.listboxNode.getAttribute('aria-activedescendant');
   this.multiselectable = this.listboxNode.hasAttribute('aria-multiselectable');
@@ -316,6 +322,9 @@ aria.Listbox.prototype.defocusItem = function (element) {
  *  The element to focus
  */
 aria.Listbox.prototype.focusItem = function (element) {
+
+
+
   this.defocusItem(document.getElementById(this.activeDescendant));
   if (!this.multiselectable) {
     element.setAttribute('aria-selected', 'true');
