@@ -76,7 +76,7 @@ console.log("Listening for incoming connections on port:" + expressServerPort);
 
 io.on('connection', (socket) => {
   socket.emit("welcome");
-  console.log('a user connected');  
+  console.log('a user connected');
 
   socket.on('login', (username) => {
     var userObject = {};
@@ -84,29 +84,26 @@ io.on('connection', (socket) => {
     userObject.socketId = socket.id;
     userObject.isOffered = false;
     userObject.isAnswered = false;
-    var generatedUsername = "Anonymous";
-    
+    var isPresent = false;
 
-    if (userObject.username == "") {
-      socket.emit("emptyUsername", generatedUsername);
-      userObject.username = generatedUsername;
-      usersArray.push(userObject);
-    } else {
-
-      for (let index = 0; index < usersArray.length; index++) {
-        var nextUser = usersArray[index];
-        if (nextUser.username == userObject.username && nextUser.username != generatedUsername) {
-          socket.emit("signalServerError", {
-            errorDescription: "Baglanmak istenen kullanıcı adına sahip bir kullanıcı zaten bulunuyor.",
-            errorCode: "ERR-USER-003"
-          });
-          return;
-        }
+    //Localimde çalıştırdığımda aynı isimli kullanıcılar kabul ediliyor
+    //Son giren isim olarak boş string alıyor
+    //Boş string alan kullanıcı arama yapamıyor
+    for (let index = 0; index < usersArray.length; index++) {
+      var nextUser = usersArray[index];
+      if (nextUser.username == userObject.username) {
+        isPresent = true;
+        socket.emit("signalServerError", {
+          errorDescription: "Baglanmak istenen kullanıcı adına sahip bir kullanıcı zaten bulunuyor.",
+          errorCode: "ERR-USER-003"
+        });
+        return;
       }
+    }
 
+    if (isPresent == false) {
       usersArray.push(userObject);
       socket.emit("userSaved", userObject.username);
-
     }
   });
 
@@ -114,10 +111,8 @@ io.on('connection', (socket) => {
     var foundUserObjectToRemove = false;
     var userObjectToBeRemoved = -1;
 
-
     for (var II = 0; II < usersArray.length; II++) {
       var nextUser = usersArray[II];
-
 
       if (nextUser.socketId == socket.id) {
         foundUserObjectToRemove = true;
@@ -126,22 +121,20 @@ io.on('connection', (socket) => {
       }
     }
 
-
     if (foundUserObjectToRemove == true)
       removeElement(usersArray, userObjectToBeRemoved);
   });
 
 
-  socket.on("peer-offer", function (offerObject){
+  socket.on("peer-offer", function (offerObject) {
 
     var offeredUserObject = 0;
 
-    if(typeof offerObject !== "object" || 
-       offerObject === null || 
-       !offerObject.hasOwnProperty("SDP") || 
-       !offerObject.hasOwnProperty("targetUsername"))
-    {
-      console.log("peer-offer, bad parameter:"+offerObject);
+    if (typeof offerObject !== "object" ||
+      offerObject === null ||
+      !offerObject.hasOwnProperty("SDP") ||
+      !offerObject.hasOwnProperty("targetUsername")) {
+      console.log("peer-offer, bad parameter:" + offerObject);
       return;
     }
 
@@ -151,13 +144,12 @@ io.on('connection', (socket) => {
       //ilgili user objesi, bu eventi tetikleyen; yani offerı yapan user oluyor. (arayan kişi)
       if (user.username.toLowerCase() == offerObject.targetUsername.toLowerCase()) {
         offeredUserObject = user;
-        break;        
+        break;
       }
     }
 
 
-    if(!offeredUserObject)
-    {
+    if (!offeredUserObject) {
       var errorObject = {};
       errorObject.errorDescription = "Aranmak istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
       errorObject.errorCode = "ERR-USER-002";
@@ -167,40 +159,38 @@ io.on('connection', (socket) => {
     }
 
 
-    console.log("emitting peer-offer to "+offeredUserObject.username+" with SDP:"+offerObject.SDP+" from:"+offerObject.fromUsername);
+    console.log("emitting peer-offer to " + offeredUserObject.username + " with SDP:" + offerObject.SDP + " from:" + offerObject.fromUsername);
 
     io.of("/").connected[offeredUserObject.socketId].emit("peer-offer", offerObject);
 
 
   });
 
-  socket.on("peer-answer", function (offerObject){
+  socket.on("peer-answer", function (offerObject) {
 
     var offeredUserObject = 0;
 
-        if(typeof offerObject !== "object" || 
-        offerObject === null || 
-        !offerObject.hasOwnProperty("SDP") || 
-        !offerObject.hasOwnProperty("targetUsername"))
-    {
-      console.log("peer-offer, bad parameter:"+offerObject);
+    if (typeof offerObject !== "object" ||
+      offerObject === null ||
+      !offerObject.hasOwnProperty("SDP") ||
+      !offerObject.hasOwnProperty("targetUsername")) {
+      console.log("peer-offer, bad parameter:" + offerObject);
       return;
     }
 
-    
+
     for (let index = 0; index < usersArray.length; index++) {
       var user = usersArray[index];
       //eğer arraydeki user objelerinden, socket id'si bu event'e gelen socket id ile eşitse
       //ilgili user objesi, bu eventi tetikleyen; yani offerı yapan user oluyor. (arayan kişi)
       if (user.username.toLowerCase() == offerObject.fromUsername.toLowerCase()) {
         offeredUserObject = user;
-        break;        
+        break;
       }
     }
 
-    
-    if(!offeredUserObject)
-    {
+
+    if (!offeredUserObject) {
       var errorObject = {};
       errorObject.errorDescription = "Aranmak istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
       errorObject.errorCode = "ERR-USER-002";
@@ -210,7 +200,7 @@ io.on('connection', (socket) => {
     }
 
 
-    console.log("emitting peer-answer to "+offeredUserObject.username+" with SDP:"+offerObject.SDP+" from:"+offerObject.targetUsername);
+    console.log("emitting peer-answer to " + offeredUserObject.username + " with SDP:" + offerObject.SDP + " from:" + offerObject.targetUsername);
 
     io.of("/").connected[offeredUserObject.socketId].emit("peer-answer", offerObject);
   });
@@ -220,7 +210,7 @@ io.on('connection', (socket) => {
     var offeredUserObject = 0;
     var callerUserObject = 0;
 
-    
+
     //elimizdeki arrayde dönüyoruz
     for (let index = 0; index < usersArray.length; index++) {
       var user = usersArray[index];
@@ -260,63 +250,58 @@ io.on('connection', (socket) => {
 
     //Ece'nin Mert'i aramak istediği senaryoda:
     //MertUser.socket.emit('offer', EceUser.username)  
-        
+
     io.of("/").connected[offeredUserObject.socketId].emit("offer", callerUserObject.username);
-    console.log(callerUserObject.username+" will try calling "+offeredUserObject.username);
+    console.log(callerUserObject.username + " will try calling " + offeredUserObject.username);
   });
 
-  socket.on("send-candidate", function(candidateObject){
+  socket.on("send-candidate", function (candidateObject) {
 
-    try
-    {
-      if(typeof candidateObject !== "object" || 
-      candidateObject === null || 
-      !candidateObject.hasOwnProperty("candidate") || 
-      !candidateObject.hasOwnProperty("fromUsername") ||
-      !candidateObject.hasOwnProperty("targetUsername"))
-          {
-            console.log("send-candidate, bad parameter:"+candidateObject);
-            return;
-          }
-
-     var targetUserObject = 0;
-     
-     for (let index = 0; index < usersArray.length; index++) {
-      var user = usersArray[index];
-
-      if (user.username.toLowerCase() == candidateObject.targetUsername.toLowerCase()) {
-        targetUserObject = user;
-        break;
+    try {
+      if (typeof candidateObject !== "object" ||
+        candidateObject === null ||
+        !candidateObject.hasOwnProperty("candidate") ||
+        !candidateObject.hasOwnProperty("fromUsername") ||
+        !candidateObject.hasOwnProperty("targetUsername")) {
+        console.log("send-candidate, bad parameter:" + candidateObject);
+        return;
       }
 
-    }
-    
-    if(!targetUserObject)
-    {
-      var errorObject = {};
-      errorObject.errorDescription = "Candidate gönderilmek istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
-      errorObject.errorCode = "ERR-USER-009";
-      socket.emit("signalServerError", errorObject);
-      console.log("targetUserObject is null, terminating.");
-      return;
-    }
+      var targetUserObject = 0;
 
-    io.of("/").connected[targetUserObject.socketId].emit("new-ice-candidate", candidateObject.candidate);
-    
+      for (let index = 0; index < usersArray.length; index++) {
+        var user = usersArray[index];
 
-    }
-    catch(err)
-    {
-      console.log("send-candidate error:"+err);
+        if (user.username.toLowerCase() == candidateObject.targetUsername.toLowerCase()) {
+          targetUserObject = user;
+          break;
+        }
+
+      }
+
+      if (!targetUserObject) {
+        var errorObject = {};
+        errorObject.errorDescription = "Candidate gönderilmek istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
+        errorObject.errorCode = "ERR-USER-009";
+        socket.emit("signalServerError", errorObject);
+        console.log("targetUserObject is null, terminating.");
+        return;
+      }
+
+      io.of("/").connected[targetUserObject.socketId].emit("new-ice-candidate", candidateObject.candidate);
+
+
+    } catch (err) {
+      console.log("send-candidate error:" + err);
     }
   });
 
-  socket.on("answer", function(answerObject) {
+  socket.on("answer", function (answerObject) {
 
     var offeredUserObject = 0;
     var callerUserObject = 0;
 
-    
+
     //elimizdeki arrayde dönüyoruz
     for (let index = 0; index < usersArray.length; index++) {
       var user = usersArray[index];
@@ -329,7 +314,7 @@ io.on('connection', (socket) => {
       //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
       //ilgili user objesi, aranmak istenen usera denk geliyor
       if (user.username.toLowerCase() == answerObject.caller.toLowerCase()) {
-        callerUserObject = user;        
+        callerUserObject = user;
       }
     }
 
@@ -353,28 +338,42 @@ io.on('connection', (socket) => {
       return;
     }
 
-    if(answerObject.accepted) {
+    if (answerObject.accepted) {
       io.of("/").connected[callerUserObject.socketId].emit("accepted", offeredUserObject.username);
       console.log("answering : " + callerUserObject.username);
-    }
-    else{
+    } else {
       io.of("/").connected[callerUserObject.socketId].emit("declined", offeredUserObject.username);
       console.log("answering : " + callerUserObject.username);
     }
-     
+
   });
 
-  socket.on("candidate", function(user){
+  socket.on("candidate", function (user) {
 
-if(callerUserObject.isAnswered && offeredUserObject.isOffered){
-  io.of("/").connected[user.socketId].emit("candidate", user.candidate);
-  console.log("Generating a candidate for : " + user.username);
-} else {
+    if (callerUserObject.isAnswered && offeredUserObject.isOffered) {
+      io.of("/").connected[user.socketId].emit("candidate", user.candidate);
+      console.log("Generating a candidate for : " + user.username);
+    } else {
+      var errorObject = {};
+      errorObject.errorDescription = "Candidate oluşturamıyorum, lütfen daha sonra tekrar deneyiniz.";
+      errorObject.errorCode = "ERR-USER-004";
+      socket.emit("signalServerError", errorObject);
+      console.log("can't generate a candidate, terminating.");
+    }
+  });
+
+  //Güncel kullanıcı listesi döndürecek event
+  socket.on("users", function(){
+if(usersArray.length == 0){
   var errorObject = {};
-  errorObject.errorDescription = "Candidate oluşturamıyorum, lütfen daha sonra tekrar deneyiniz.";
-  errorObject.errorCode = "ERR-USER-004";
+  errorObject.errorDescription = "Kayıtlı kullanıcı yok.";
+  errorObject.errorCode = "ERR-USER-007";
   socket.emit("signalServerError", errorObject);
-  console.log("can't generate a candidate, terminating.");
+  console.log("There are no online users.");
+} else 
+{
+  socket.emit("Online-Users", usersArray);
+  console.log("Sending an array of online users");
 }
   });
 });
