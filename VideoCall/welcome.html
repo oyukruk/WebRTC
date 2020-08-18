@@ -4,9 +4,12 @@
 <head>
     <script src="js/jquery-3.5.1.min.js"></script>
     <script src="js/socket-io.js"></script>
+    <!--<script src="js/listbox.js"></script>-->
+    <!--<script src="js/listbox-scrollable.js"></script>-->
     <!--<script src="js/current-cam.js"></script>-->
     <meta charset = "utf-8" /> 
     <link rel="stylesheet" href="css/main.css">
+    <!--<link rel="stylesheet" href="css/listbox.css">-->
 </head>
 <body>
 <script>
@@ -234,6 +237,38 @@ function hasUserMedia() {
 
         });
 
+        socket.on("Online-Users", function(usersArray){
+
+           
+            // Make a container element for the list
+            listContainer = document.createElement('div');
+            // Make the list
+            listElement = document.createElement('ul');
+            // Set up a loop that goes through the items in listItems one at a time
+            numberOfListItems = usersArray.length;
+            //listItem;
+            //i;
+
+            // Add it to the page
+            document.getElementsByTagName('body')[0].appendChild(listContainer);
+            listContainer.appendChild(listElement);
+
+            for (i = 0; i < numberOfListItems; ++i) {
+                // create an item for each one
+                listItem = document.createElement('li');
+
+                // Add the item text
+                listItem.innerHTML = usersArray[i];
+
+                // Add listItem to the listElement
+                listElement.appendChild(listItem);
+            }       
+
+        });
+        
+        
+
+
         socket.on("declined", function(offeredUser){
 
             alert(offeredUser + " rejected your call.");
@@ -381,6 +416,12 @@ function hasUserMedia() {
     <h1 id="greet"></h1>
 </div>
  
+<!--https://www.w3.org/TR/wai-aria-practices-1.1/examples/listbox/listbox-scrollable.html
+bu linkten listbox.js, listbox-scrollable.js, listbox.css aldım.
+html kodu da buraya
+-->
+
+
 </div>
         <div class="welcome-form">
             <div id="camera">
