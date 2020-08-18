@@ -376,10 +376,7 @@ function removeElement(array, elem) {
 
 function updateUsers(usersArray) {
   if (usersArray.length == 0) {
-    var errorObject = {};
-    errorObject.errorDescription = "Kayıtlı kullanıcı yok.";
-    errorObject.errorCode = "ERR-USER-007";
-    socket.emit("signalServerError", errorObject);
+    socket.emit("Online-Users", usersArray);
     console.log("There are no online users.");
   } else {
     socket.emit("Online-Users", usersArray);
