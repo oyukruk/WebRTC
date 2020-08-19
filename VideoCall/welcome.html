@@ -26,6 +26,8 @@ var peerConnection = 0;
 
 var webRtcSupported = true;
 
+var messageId = 0;
+
 var urlParams = new URLSearchParams(location.search);
 
 if(urlParams.has('txtName')) {
@@ -213,12 +215,38 @@ function hasUserMedia() {
             }
 
             socket.emit("private-message",messageObject);
+            document.getElementById("messageInput").value ="";
 
+
+            var listElement = document.getElementById("messages");
+            // create an item for message
+            listItem = document.createElement('li');
+
+                // Add the item text
+            listItem.innerHTML = messageObject.message;
+            listItem.setAttribute("style","color: #B63FE6");
+            listItem.setAttribute("id","messages"+ messageId);
+            message-id++;
+
+            // Add listItem to the listElement
+            listElement.appendChild(listItem);
+                  
         });
 
         socket.on("private-message", function (messageObject) {
-            //message box icine messageObejct.sender: messageObject.message seklinde eklenir
 
+            var listElement = document.getElementById("messages");
+            // create an item for message
+            listItem = document.createElement('li');
+
+                // Add the item text
+            listItem.innerHTML = messageObject.message;
+            listItem.setAttribute("style","color: #3FBFE6");
+            listItem.setAttribute("id","messages"+ messageId);
+            message-id++;
+
+            // Add listItem to the listElement
+            listElement.appendChild(listItem);
         });
 
         //beni aramak isteyen biri var.
@@ -484,13 +512,10 @@ function getSelectedUsername()
                 <div class="message-container">
                     <div id="area">
 
-                        <div id="myMessage">
+                        <ul id="Messages">
 
-                        </div>
+                        </ul>
 
-                        <div id="yourMessage">
-
-                        </div>
                         
                     </div>
                     <input type="text" id="messageInput">
