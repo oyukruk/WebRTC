@@ -363,6 +363,31 @@ io.on('connection', (socket) => {
       console.log("can't generate a candidate, terminating.");
     }
   });
+
+  //Seçilen sockete message objesini emit et
+  socket.on("private-message", function(messageObject,targetUser){
+    var validation = false;
+  for (let index = 0; index < usersArray.length; index++) {
+    var user = usersArray[index];
+    if(user.username.toLowerCase() == targetUser.username.toLowerCase()){
+      validation = true;
+      io.to(targetUser.socketId).emit("private-message", messageObject);
+      console.log("Mesajı alacak kullanıcı bulundu");
+    }
+  };
+  if(validation == false){
+    var errorObject = {};
+    errorObject.errorDescription = "Mesaj gönderilmesi istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
+    errorObject.errorCode = "ERR-USER-009";
+    socket.emit("signalServerError", errorObject);
+    console.log("target user is not present, terminating.");
+  };
+  });
+
+  //Bütün socketlere message objesini emit et
+  socket.on("public-message", function(messageObject){
+  io.sockets.emit("new-message", {username : socket.username, message : messageObject })
+  });
 });
 
 
