@@ -447,8 +447,10 @@ function getSelectedUsername()
                     aria-labelledby="ss_elem">
                 </ul>
                 <button type="button" class="buttonCall" id="callButton">Call</button>
+                <button type="button" class="buttonFinish" id="finishButton">Finish</button>
                 </div>
             </div>
+
             <div id="camera">
 
                 <video id="video" autoplay muted playsinline></video> 
@@ -456,16 +458,29 @@ function getSelectedUsername()
                 <video id="remoteVideo" autoplay playsinline></video>
 
                 <button class="fas fa-microphone" id="btnMute"></button>
+                </div>
+
+                <div class="message-container">
+                    <div id="area">
+
+                        <div id="myMessage">
+
+                        </div>
+
+                        <div id="yourMessage">
+
+                        </div>
+                        
+                    </div>
+                    <input type="text" id="messageInput">
+                    <button id="sendMsgButton">Send</button>
+                    
+                </div>
+
 
             
-                <div class="welcome-group">
-                    <!--<label for="callName" id="callNameLabel">Enter Name:</label>-->
-                    <!--<input type="name" name="nameInput" id="nameInput">-->
-                    
-                    <button type="button" class="buttonFinish" id="finishButton">Finish</button>
-                </div>
-            
         </div>
+        
 
         <!-- <div id="answer" style="visibility: hidden;">
             <button id="confirm">Confirm</button>

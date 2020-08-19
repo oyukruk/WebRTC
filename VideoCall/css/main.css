@@ -69,7 +69,6 @@ body{
 #camera{
     width: 640px;
     height: 480px;
-
     margin: 0 auto;
     border: 4px solid  black;
 }
@@ -87,13 +86,15 @@ body{
 }
 
 .buttonCall{
-    width: 9rem;
+    margin-bottom: 0.5rem;
+    width: 13rem;
     font-weight: 700;
     font-style: italic;
     text-align: center;
     color:green;
     border: 1px solid black;
     border-radius: 6px;
+
 }
 
 .buttonCall:hover{
@@ -111,7 +112,7 @@ body{
     justify-content: center;
 } 
 
-#confirm{
+/* #confirm{
     width: 10rem;
     font-weight: bold;
     font-style: italic;
@@ -130,7 +131,52 @@ body{
     font-weight: bold;
     visibility: none;
     margin-right: 1rem;
-    border-radius: 6px;}
+    border-radius: 6px;} */
+
+
+    .buttonFinish{
+        width: 13rem;
+        font-weight: 700;
+        font-style: italic;
+        text-align: center;
+        color:red;
+        border: 1px solid black;
+        border-radius: 6px;
+    }
+    
+    .buttonFinish:hover{
+        background:red;
+        color: white;
+    }
+
+    .message-container{
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        background: #F5F5F5;
+        border: 3px solid #aaa;
+        font-size: 0;
+    }
+
+    #area{
+        box-sizing: border-box;
+        display: flex;
+        width: 20rem;
+        height: 45rem;
+        background: white;
+        border: 1px solid #aaa;
+    }
+
+    #messageInput{
+        margin-top: 0.25rem;
+        height: 2rem;
+    }
+
+    #sendMsgButton{
+        margin-top: 0.25rem;
+        background:#336ea2;
+        color: white;
+    }
 
 
 
