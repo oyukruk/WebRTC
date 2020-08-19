@@ -433,6 +433,22 @@ function getSelectedUsername()
  
 </div>
         <div class="welcome-form">
+
+            <div id="userContainer" class="listbox-area">
+                <div id="listHeader" class="left-area">
+
+                <i class="fa fa-users" aria-hidden="true"></i>
+                <span id="ss_elem">Online Users:</span>
+                
+                
+                <ul id="ss_elem_list"
+                    tabindex="0"
+                    role="listbox"
+                    aria-labelledby="ss_elem">
+                </ul>
+                <button type="button" class="buttonCall" id="callButton">Call</button>
+                </div>
+            </div>
             <div id="camera">
 
                 <video id="video" autoplay muted playsinline></video> 
@@ -450,26 +466,11 @@ function getSelectedUsername()
                 </div>
             
         </div>
-    </div>
 
-        <div id="answer" style="visibility: hidden;">
+        <!-- <div id="answer" style="visibility: hidden;">
             <button id="confirm">Confirm</button>
             <button id="ignore">Ignore</button>
-        </div>
-
-        <div id="userContainer" class="listbox-area">
-            <div id="listHeader" class="left-area">
-            <i class="fa fa-users" aria-hidden="true"></i>
-            <span id="ss_elem">Online Users:</span>
-            
-            
-            <ul id="ss_elem_list"
-                tabindex="0"
-                role="listbox"
-                aria-labelledby="ss_elem"></ul>
-            </div>
-        </div>
-        <button type="button" class="buttonCall" id="callButton">Call</button>
+        </div> -->
 
 
 </body>

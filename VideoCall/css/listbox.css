@@ -1,8 +1,4 @@
-.annotate {
-    font-style: italic;
-    color: #366ed4;
-  }
-  
+
   .listbox-area {
     padding: 20px;
     background: #eee;
@@ -10,21 +6,16 @@
     font-size: 0;
   }
   
-  .left-area,
-  .right-area {
+  .left-area{
     box-sizing: border-box;
     display: inline-block;
     font-size: 14px;
     vertical-align: top;
-    width: 20%;
+    width: 10rem;
   }
   
   .left-area {
     padding-right: 10px;
-  }
-  
-  .right-area {
-    padding-left: 10px;
   }
   
   [role="listbox"] {
