@@ -61,16 +61,17 @@ function hasUserMedia() {
             if(mute.className = "fas fa-microphone"){
                 mute.className ="fas fa-microphone-alt-slash";
                 console.log("first if");
+                var video=document.getElementById("remoteVideo");
+
+            video.muted = !video.muted;
+
+            console.log("btnMute clicked. new mute value :"+video.muted);
                 return;
             }
 
             
 
-            var video=document.getElementById("remoteVideo");
-
-            video.muted = !video.muted;
-
-            console.log("btnMute clicked. new mute value :"+video.muted);
+            
 
         });     
         
