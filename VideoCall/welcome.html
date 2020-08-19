@@ -175,7 +175,7 @@ function hasUserMedia() {
          
         $("#callButton").on("click",function(){
             
-            userToCall = document.getElementById("nameInput").value;
+            userToCall = getSelectedUsername();
             if(userToCall.length>0){
 
 
