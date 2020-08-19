@@ -199,6 +199,26 @@ function hasUserMedia() {
             }
         });
 
+        $("#sendMsgButton").on("click",function(){
+
+            var messageObject = {};
+            messageObject.message = document.getElementById("messageInput").value;
+
+            if(callerUser != 0) answerObject.sendTo = callerUser;
+            else if (userToCall != 0) answerObject.sendTo = userToCall;
+            else {
+                alert("You first need to connect a user.");
+                return;
+            }
+
+            socket.emit("private-message",messageObject);
+
+        });
+
+        socket.on("private-message", function (messageObject) {
+            //message box icine messageObejct.sender: messageObject.message seklinde eklenir
+
+        });
 
         //beni aramak isteyen biri var.
         //aramak isteyen kişi: callerUsername
