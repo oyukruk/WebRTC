@@ -124,7 +124,7 @@ io.on('connection', (socket) => {
 
     if (foundUserObjectToRemove == true)
       removeElement(usersArray, userObjectToBeRemoved);
-      updateUsers();
+    updateUsers();
   });
 
 
@@ -365,28 +365,36 @@ io.on('connection', (socket) => {
   });
 
   //Seçilen sockete message objesini emit et
-  socket.on("private-message", function(messageObject,targetUser){
+  socket.on("private-message", function (messageObject) {
     var validation = false;
-  for (let index = 0; index < usersArray.length; index++) {
-    var user = usersArray[index];
-    if(user.username.toLowerCase() == targetUser.username.toLowerCase()){
-      validation = true;
-      io.to(targetUser.socketId).emit("private-message", messageObject);
-      console.log("Mesajı alacak kullanıcı bulundu");
-    }
-  };
-  if(validation == false){
-    var errorObject = {};
-    errorObject.errorDescription = "Mesaj gönderilmesi istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
-    errorObject.errorCode = "ERR-USER-009";
-    socket.emit("signalServerError", errorObject);
-    console.log("target user is not present, terminating.");
-  };
+    for (let index = 0; index < usersArray.length; index++) {
+      var user = usersArray[index];
+      if (user.username.toLowerCase() == messageObject.sendTo.toLowerCase()) {
+        validation = true;
+        console.log("Mesajı alacak kullanıcı bulundu");
+        io.to(user.socketId).emit("private-message", {
+          username: socket.username,
+          targetUsername: user.username,
+          message: messageObject.message
+        });
+        console.log("Mesaj " + user.username + " adlı kullanıcıya gönderildi");
+      }
+    };
+    if (validation == false) {
+      var errorObject = {};
+      errorObject.errorDescription = "Mesaj gönderilmesi istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
+      errorObject.errorCode = "ERR-USER-009";
+      socket.emit("signalServerError", errorObject);
+      console.log("target user is not present, terminating.");
+    };
   });
 
   //Bütün socketlere message objesini emit et
-  socket.on("public-message", function(messageObject){
-  io.sockets.emit("new-message", {username : socket.username, message : messageObject })
+  socket.on("public-message", function (messageObject) {
+    io.sockets.emit("new-message", {
+      username: socket.username,
+      message: messageObject.message
+    })
   });
 });
 
@@ -401,7 +409,7 @@ function removeElement(array, elem) {
 
 function updateUsers() {
 
-  console.log("will notify updated sockets about latest usersArray. current usersArrayLength:"+usersArray.length);
+  console.log("will notify updated sockets about latest usersArray. current usersArrayLength:" + usersArray.length);
   if (usersArray.length == 0) {
     var errorObject = {};
     errorObject.errorDescription = "Kayıtlı kullanıcı yok.";
