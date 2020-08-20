@@ -151,6 +151,7 @@ function hasUserMedia() {
             clearVideosFromDOM();
             
             userToCall = getSelectedUsername();
+            if(userToCall == userName) return;
             if(userToCall.length>0){
                 //birini arayacağım zaman, kameramın görüntüsünü ekranımdaki <video> elemente basıyorum.
                 //aynı zamanda bu kamera görüntüsünü, peerConnection.addTrack diyerek peer objesine de ekliyorum
