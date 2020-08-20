@@ -150,10 +150,11 @@ body{
     }
 
     .message-container{
+        margin-left: auto;
         display: flex;
         flex-direction: column;
         padding: 20px;
-        background: #F5F5F5;
+        background:#FFE4E1;
         border: 3px solid #aaa;
         
     }
@@ -165,6 +166,7 @@ body{
         height: 45rem;
         background: white;
         border: 1px solid #aaa;
+        overflow: auto;
     }
 
     #messageInput{
@@ -176,6 +178,10 @@ body{
         margin-top: 0.25rem;
         background:#336ea2;
         color: white;
+    }
+
+    ul{
+        padding-inline-start: 10px;
     }
 
 

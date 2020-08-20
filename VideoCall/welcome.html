@@ -63,6 +63,24 @@ function hasUserMedia() {
 
         socket = io.connect('https://webrtc-signalserver.azurewebsites.net');
 
+        // btnVideo
+
+        // $("#btnVideo").on("click", function(){
+
+        //     var mute=document.getElementById("btnVideo");
+        //     console.log("clicked");
+
+        //     var video=document.getElementById("video");
+
+        //     video.autoplay=false;
+
+        //     console.log("btnMute clicked. new mute value :"+video.muted);
+        //         return;
+            
+
+        // }); 
+
+
         $("#btnMute").on("click", function(){
 
             var mute=document.getElementById("btnMute");
@@ -70,10 +88,9 @@ function hasUserMedia() {
 
             if(mute.className = "fas fa-microphone"){
                 mute.className ="fas fa-microphone-alt-slash";
-                console.log("first if");
                 var video=document.getElementById("video");
 
-            video.muted = !video.muted;
+            video.muted = true;
 
             console.log("btnMute clicked. new mute value :"+video.muted);
                 return;
@@ -85,13 +102,11 @@ function hasUserMedia() {
 
             var mute=document.getElementById("btnMute");
             console.log("clicked");
+            var video=document.getElementById("video");
+            if(video.mute=true){
+                mute.className ="fas fa-microphone";                
 
-            if(mute.className = "fas fa-microphone-alt-slash"){
-                mute.className ="fas fa-microphone";
-                console.log("first if");
-                var video=document.getElementById("video");
-
-            video.muted = !video.muted;
+            video.muted = false;
 
             console.log("btnMute clicked. new mute value :"+video.muted);
                 return;
@@ -105,11 +120,11 @@ function hasUserMedia() {
             console.log("clicked");
 
             if(mute.className = "fas fa-headphones"){
-                mute.style.background="red";
+                mute.style.background="silver";
 
                 var video=document.getElementById("remoteVideo");
 
-            video.muted = !video.muted;
+            video.muted = true;
 
             console.log("btnMute clicked. new mute value :"+video.muted);
                 return;
@@ -121,13 +136,13 @@ function hasUserMedia() {
 
             var mute=document.getElementById("btnQuite");
             console.log("clicked");
+            var video=document.getElementById("remoteVideo");
+            if(video.muted=true){
+                mute.style.background="white";
 
-            if(mute.className = "fas fa-headphones"){
-                mute.style.background="silver";
+                
 
-                var video=document.getElementById("remoteVideo");
-
-            video.muted = !video.muted;
+            video.muted = false;
 
             console.log("btnMute clicked. new mute value :"+video.muted);
                 return;
@@ -232,7 +247,7 @@ function hasUserMedia() {
 
                 // Add the item text
             listItem.innerHTML = userName + ": " + messageObject.message;
-            listItem.setAttribute("style","color: #B63FE6;");
+            listItem.setAttribute("style","color: white; padding:10px 20px; border-radius:15px; background:#8FBC8F; margin-top:2px; width:10rem;");
             listItem.setAttribute("id","message-"+ messageId);
 
             // Add listItem to the listElement
@@ -248,7 +263,7 @@ function hasUserMedia() {
 
                 // Add the item text
             listItem.innerHTML = messageObject.from + ": " + messageObject.message;
-            listItem.setAttribute("style","color: #3FBFE6");
+            listItem.setAttribute("style","color: white; padding:10px 20px; border-radius:15px; background:#696969; margin-top:2px; margin-left:6rem; width:10rem;" );
             listItem.setAttribute("id","message-"+ messageObject.messageId);
 
             
@@ -673,9 +688,12 @@ function resetPeerConnectionObject()
                 <div id="remoteVideoContainer" style="width:640px; height:480px; text-align:center">
                 <video id="remoteVideo" autoplay playsinline style="width:640px; height:480px; object-fit: cover;"></video>
             </div>
+                </div>
+            <div id="buttons">
+                <!-- <button class="fas fa-video" id="btnVideo"></button> -->
                 <button class="fas fa-microphone" id="btnMute"></button>
                 <button class="fas fa-headphones" id="btnQuite"></button>
-                </div>
+            </div>
 
                 <div class="message-container">
                 
