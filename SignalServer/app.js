@@ -130,6 +130,23 @@ io.on('connection', (socket) => {
   socket.on("endCall", function (connectedUser) {
     //connctedUser userArray den bulunur 
     //ve ona socket.emit("callEnded", bu sockete gelen kullanıcının username de parametre olarak verilir
+    var validation = false;
+    for (let index = 0; index < usersArray.length; index++) {
+      var user = usersArray[index];
+      if(user.socketId == connectedUser.socketId){
+        var validation = true;
+        socket.emit("callEnded", socket.username);
+        console.log(connectedUser.username + " is ending the call");
+      }
+    }
+    if(!validation){
+      var errorObject = {};
+      errorObject.errorDescription = "Görüşülen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
+      errorObject.errorCode = "ERR-USER-010";
+      socket.emit("signalServerError", errorObject);
+      console.log("connectedUser is not present, terminating.");
+    };
+
 
   });
 
