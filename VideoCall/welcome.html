@@ -84,7 +84,7 @@ function hasUserMedia() {
                 console.log("first if");
                 var video=document.getElementById("video");
 
-            video.muted = !video.muted;
+            video.muted = video.muted;
 
             console.log("btnMute clicked. new mute value :"+video.muted);
                 return;
@@ -120,7 +120,7 @@ function hasUserMedia() {
 
                 var video=document.getElementById("remoteVideo");
 
-            video.muted = !video.muted;
+            video.muted = video.muted;
 
             console.log("btnMute clicked. new mute value :"+video.muted);
                 return;
@@ -572,7 +572,8 @@ function getSelectedUsername()
                     aria-labelledby="ss_elem">
                 </ul>
                 <button type="button" class="buttonCall" id="callButton">Call</button>
-                <button type="button" class="buttonEndCall" id="endCallButton">End Call</button>
+                <button type="button" class="buttonEndCall" id="endCallButton" >End Call</button>
+                <!-- onclick="document.location.reload(true);" -->
                 </div>
             </div>
 
