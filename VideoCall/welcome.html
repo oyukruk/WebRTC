@@ -299,7 +299,7 @@ function hasUserMedia() {
             listItem = document.createElement('li');
 
                 // Add the item text
-            listItem.innerHTML = messageObject.message;
+            listItem.innerHTML = userName + ": " + messageObject.message;
             listItem.setAttribute("style","color: #B63FE6");
             listItem.setAttribute("id","messages"+ messageId);
             message-id++;
@@ -316,7 +316,7 @@ function hasUserMedia() {
             listItem = document.createElement('li');
 
                 // Add the item text
-            listItem.innerHTML = messageObject.message;
+            listItem.innerHTML = messageObject.username + ": " + messageObject.message;
             listItem.setAttribute("style","color: #3FBFE6");
             listItem.setAttribute("id","messages"+ messageId);
             message-id++;
