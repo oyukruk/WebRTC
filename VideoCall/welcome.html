@@ -30,6 +30,8 @@ var messageId = 0;
 
 var urlParams = new URLSearchParams(location.search);
 
+var socket = 0;
+
 if(urlParams.has('txtName')) {
     
     userName = String(urlParams.get('txtName'));
@@ -54,7 +56,7 @@ function hasUserMedia() {
         alert("WebRTC is not supported");
         }
 
-        const socket = io.connect('https://webrtc-signalserver.azurewebsites.net');
+        socket = io.connect('https://webrtc-signalserver.azurewebsites.net');
 
         $("#btnMute").on("click", function(){
 
@@ -127,116 +129,20 @@ function hasUserMedia() {
             }
 
             }); 
-        
 
-
-        
         if(!webRtcSupported)
             return;
 
-        const constraints = {audio: true, video: true};
-        const configuration = {iceServers: [{urls: 'stun:stun.l.google.com:19302'}]};
-
-        peerConnection = new RTCPeerConnection(configuration);
-
-
-        //ice candidate eventi - to-be discovered
-        peerConnection.onicecandidate = function(event){ 
-
-            try{
-
-                if(event.candidate)
-                {
-                    var candidateObject = {};
-                    candidateObject.candidate = event.candidate;
-                    candidateObject.fromUsername = userName;
-                    candidateObject.targetUsername =  userToCall ? userToCall : callerUser;
-
-                    socket.emit("send-candidate",candidateObject);
-
-                    console.log("ice candidate");
-                    console.log(event.candidate);
-                }
-                else
-                {
-                    console.log("empty candidate, sent all of them already.");
-                }
-
-            }
-            catch(err)
-            {
-                console.log("error:"+err);
-            }
-
-
-            console.log("ICE Candidate:"+JSON.stringify(event));
-        };
-
-        //peer objesinin bağlantı sağlayabilmesi için negotation needed eventi
-        peerConnection.onnegotiationneeded =function(){
-
-            try {
-
-               // await peerConnection.setLocalDescription(await peerConnection.createOffer());
-                // send the offer to the other peer
-                console.log("onnegotiationneeded - local description:"+JSON.stringify(peerConnection.localDescription));                
-            } catch (err) {
-                console.error(err);
-            }
-        };
-
-        //peer objeme, gösterebileceği bir stream / track vb medya geldiğinde tetiklenen event
-        peerConnection.ontrack = function(event){
-
-            console.log("peer on track?");
-            
-            
-            var remoteView = $("#remoteVideo")[0];
-
-            //burada stream objesini 1 kere set etmem yeterli.
-            //streami set ettikten sonra data transferi yapılabildiği sürece zaten görüntü oynayacaktır
-            if (remoteView.srcObject) return;
-
-
-            remoteView.srcObject = event.streams[0];
-        };
-
-
-        //peer objemin connection state'i değiştiğinde tetiklenen event
-        peerConnection.onconnectionstatechange = function(event) {
-
-            console.log("peer connection state changed:"+peerConnection.connectionState);
-
-                //switch(peerConnection.connectionState) {
-                 //   case "connected":
-                    // The connection has become fully connected
-                 //   break;
-                 //   case "disconnected":
-                 //   case "failed":
-                    // One or more transports has terminated unexpectedly or in an error
-                 //   break;
-                 //   case "closed":
-                    // The connection has been closed
-                //    break;
-               // }
-        };
-
-
-        //peer objemin signaling state'i değiştiğinde tetiklenen event
-        peerConnection.onsignalingstatechange = function(event) {
-
-            console.log("peer signal state changed:"+JSON.stringify(peerConnection.signalingState));
-
-        };
+        resetPeerConnectionObject();
       
          
         $("#callButton").on("click",function(){
+
+                        resetPeerConnectionObject();
+            clearVideosFromDOM();
             
             userToCall = getSelectedUsername();
             if(userToCall.length>0){
-
-
-                
                 //birini arayacağım zaman, kameramın görüntüsünü ekranımdaki <video> elemente basıyorum.
                 //aynı zamanda bu kamera görüntüsünü, peerConnection.addTrack diyerek peer objesine de ekliyorum
                 //sonra da aramak istediğim kişiye 'seni aramak istiyorum' şeklinde socket.io üzerinden talep gönderiyorum.
@@ -248,8 +154,6 @@ function hasUserMedia() {
                         socket.emit("offer",userToCall);     
                         console.log("emitting offer for:"+userToCall);
                     })
-
-               
             }
             else{
                 alert("Username of the user you want to call is required.");
@@ -261,19 +165,23 @@ function hasUserMedia() {
             connectedUser = 0;
 
             if(callerUser != 0) connectedUser = callerUser;
+            
             else if (userToCall != 0) connectedUser = userToCall;
+            
             else {
                 alert("There is no current call.");
                 return;
             }
 
             socket.emit("endCall", connectedUser)
-            peerConnection.close();
-
+            resetPeerConnectionObject();
+            clearVideosFromDOM();
         });
 
-        socket.on("callEnded", function(user){
-            alert(user + " ended this session.");
+        socket.on("callEnded", function(){
+            resetPeerConnectionObject();
+            clearVideosFromDOM();
+            console.log("call ended by remote user");
         });
 
 
@@ -297,10 +205,11 @@ function hasUserMedia() {
             var listElement = document.getElementById("messages");
             // create an item for message
             listItem = document.createElement('li'); //aa
+            
 
                 // Add the item text
             listItem.innerHTML = userName + ": " + messageObject.message;
-            listItem.setAttribute("style","color: #B63FE6");
+            listItem.setAttribute("style","color: #B63FE6;");
             listItem.setAttribute("id","messages"+ messageId);
             message-id++;
 
@@ -388,6 +297,8 @@ function hasUserMedia() {
                 listItem.innerHTML = usersArray[i].username;
                 listItem.setAttribute("role","option");
                 listItem.setAttribute("id","ss_elem_"+i);
+                listItem.setAttribute("style","cursor:pointer");
+
 
                 // Add listItem to the listElement
                 listElement.appendChild(listItem);
@@ -540,6 +451,41 @@ function hasUserMedia() {
 });
 
 
+function clearVideosFromDOM()
+{
+
+    if( $("#video")[0].srcObject)
+    {
+    $("#video")[0].srcObject.getVideoTracks().forEach(track => {
+        track.stop()
+        $("#video")[0].srcObject.removeTrack(track);
+        $("#video")[0].src = "";
+        $("#video")[0].play();
+    });
+    }
+
+
+
+    if($("#remoteVideo")[0].srcObject)
+    {
+    $("#remoteVideo")[0].srcObject.getVideoTracks().forEach(track => {
+        track.stop()
+        $("#remoteVideo")[0].srcObject.removeTrack(track);
+        $("#remoteVideo")[0].src = "";
+        $("#remoteVideo")[0].play();
+    });
+    }
+
+
+
+
+    $("#video")[0].srcObject = null;
+    $("#remoteVideo")[0].srcObject = null;
+
+
+}
+
+
 function getSelectedUsername()
 {
 
@@ -549,6 +495,124 @@ function getSelectedUsername()
 
     return $("#"+selectedId).html();
 }
+
+function resetPeerConnectionObject()
+{
+    if(peerConnection)
+    {
+        peerConnection.close();
+        peerConnection = null;
+    }
+
+    userToCall = 0;
+    callerUser = 0;
+
+    const constraints = {audio: true, video: true};
+    const configuration = {iceServers: [{urls: 'stun:stun.l.google.com:19302'}]};
+
+        peerConnection = new RTCPeerConnection(configuration);
+
+
+        //ice candidate eventi - to-be discovered
+        peerConnection.onicecandidate = function(event){ 
+
+            try{
+
+                if(event.candidate)
+                {
+                    var candidateObject = {};
+                    candidateObject.candidate = event.candidate;
+                    candidateObject.fromUsername = userName;
+                    candidateObject.targetUsername =  userToCall ? userToCall : callerUser;
+
+                    socket.emit("send-candidate",candidateObject);
+
+                    console.log("ice candidate");
+                    console.log(event.candidate);
+                }
+                else
+                {
+                    console.log("empty candidate, sent all of them already.");
+                }
+
+            }
+            catch(err)
+            {
+                console.log("error:"+err);
+            }
+
+
+            console.log("ICE Candidate:"+JSON.stringify(event));
+        };
+
+        //peer objesinin bağlantı sağlayabilmesi için negotation needed eventi
+        peerConnection.onnegotiationneeded =function(){
+
+            try {
+
+               // await peerConnection.setLocalDescription(await peerConnection.createOffer());
+                // send the offer to the other peer
+                console.log("onnegotiationneeded - local description:"+JSON.stringify(peerConnection.localDescription));                
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        //peer objeme, gösterebileceği bir stream / track vb medya geldiğinde tetiklenen event
+        peerConnection.ontrack = function(event){
+
+            console.log("peer on track?");
+            
+            
+            var remoteView = $("#remoteVideo")[0];
+
+            //burada stream objesini 1 kere set etmem yeterli.
+            //streami set ettikten sonra data transferi yapılabildiği sürece zaten görüntü oynayacaktır
+            if (remoteView.srcObject) {
+                console.log("SRCOBJECT CONTROL");
+                return;
+            }
+            
+
+
+
+            remoteView.srcObject = event.streams[0];
+        };
+
+
+        //peer objemin connection state'i değiştiğinde tetiklenen event
+        peerConnection.onconnectionstatechange = function(event) {
+
+            console.log("peer connection state changed:"+peerConnection.connectionState);
+
+                switch(peerConnection.connectionState) {
+                    case "connected":
+                    
+
+                    
+                   break;
+                 //   case "disconnected":
+                 //   case "failed":
+                    // One or more transports has terminated unexpectedly or in an error
+                 //   break;
+                 //   case "closed":
+                    // The connection has been closed
+                //    break;
+               // }
+                }
+        };
+
+
+        //peer objemin signaling state'i değiştiğinde tetiklenen event
+        peerConnection.onsignalingstatechange = function(event) {
+
+            console.log("peer signal state changed:"+JSON.stringify(peerConnection.signalingState));
+
+        };
+
+
+}
+
 
 </script>
 
@@ -579,10 +643,13 @@ function getSelectedUsername()
 
             <div id="camera">
 
-                <video id="video" autoplay muted playsinline></video> 
-
-                <video id="remoteVideo" autoplay playsinline></video>
-
+                <div id="selfVideoContainer" style="width:640px; height:480px; text-align:center">
+                <video id="video" autoplay muted playsinline style="width:640px; height:480px; object-fit: cover;"></video> 
+                </div>
+                
+                <div id="remoteVideoContainer" style="width:640px; height:480px; text-align:center">
+                <video id="remoteVideo" autoplay playsinline style="width:640px; height:480px; object-fit: cover;"></video>
+            </div>
                 <button class="fas fa-microphone" id="btnMute"></button>
                 <button class="fas fa-headphones" id="btnQuite"></button>
                 </div>
