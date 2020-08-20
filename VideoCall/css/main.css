@@ -134,7 +134,7 @@ body{
     border-radius: 6px;} */
 
 
-    .buttonFinish{
+    .buttonEndCall{
         width: 13rem;
         font-weight: 700;
         font-style: italic;
@@ -144,7 +144,7 @@ body{
         border-radius: 6px;
     }
     
-    .buttonFinish:hover{
+    .buttonEndCall:hover{
         background:red;
         color: white;
     }

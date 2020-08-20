@@ -127,6 +127,11 @@ io.on('connection', (socket) => {
     updateUsers();
   });
 
+  socket.on("endCall", function (connectedUser) {
+    //connctedUser userArray den bulunur 
+    //ve ona socket.emit("callEnded", bu sockete gelen kullanıcının username de parametre olarak verilir
+
+  });
 
   socket.on("peer-offer", function (offerObject) {
 

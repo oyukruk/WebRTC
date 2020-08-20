@@ -256,6 +256,28 @@ function hasUserMedia() {
             }
         });
 
+        $("#endCallButton").on("click",function(){
+                 
+            connectedUser = 0;
+
+            if(callerUser != 0) connectedUser = callerUser;
+            else if (userToCall != 0) connectedUser = userToCall;
+            else {
+                alert("There is no current call.");
+                return;
+            }
+
+            socket.emit("endCall", connectedUser)
+            peerConnection.close();
+
+        });
+
+        socket.on("callEnded", function(user){
+            alert(user + " ended this session.");
+        });
+
+
+
         $("#sendMsgButton").on("click",function(){
 
             var messageObject = {};
@@ -550,7 +572,7 @@ function getSelectedUsername()
                     aria-labelledby="ss_elem">
                 </ul>
                 <button type="button" class="buttonCall" id="callButton">Call</button>
-                <button type="button" class="buttonFinish" id="finishButton">Finish</button>
+                <button type="button" class="buttonEndCall" id="endCallButton">End Call</button>
                 </div>
             </div>
 
