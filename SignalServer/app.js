@@ -84,7 +84,7 @@ io.on('connection', (socket) => {
     userObject.socketId = socket.id;
     userObject.isOffered = false;
     userObject.isAnswered = false;
-    var isPresent = false;
+
 
     //Localimde çalıştırdığımda aynı isimli kullanıcılar kabul ediliyor
     //Son giren isim olarak boş string alıyor
@@ -92,62 +92,31 @@ io.on('connection', (socket) => {
     for (let index = 0; index < usersArray.length; index++) {
       var nextUser = usersArray[index];
       if (nextUser.username == userObject.username) {
-        isPresent = true;
-        socket.emit("signalServerError", {
-          errorDescription: "Baglanmak istenen kullanıcı adına sahip bir kullanıcı zaten bulunuyor.",
-          errorCode: "ERR-USER-003"
-        });
-        return;
+        removeUserObjectByUsername(nextUser.username);
+        break;        
       }
     }
 
-    if (isPresent == false) {
-      usersArray.push(userObject);
-      socket.emit("userSaved", userObject.username);
-      updateUsers();
-    }
+    usersArray.push(userObject);
+    socket.emit("userSaved", userObject.username);
+    updateUsers();
+    
   });
 
   socket.on("disconnect", function () {
-    var foundUserObjectToRemove = false;
-    var userObjectToBeRemoved = -1;
-
-    for (var II = 0; II < usersArray.length; II++) {
-      var nextUser = usersArray[II];
-
-      if (nextUser.socketId == socket.id) {
-        foundUserObjectToRemove = true;
-        userObjectToBeRemoved = nextUser;
-        break;
-      }
-    }
-
-    if (foundUserObjectToRemove == true)
-      removeElement(usersArray, userObjectToBeRemoved);
-    updateUsers();
+      console.log("got disconnect signal from socket id:"+socket.id);
+     removeUserObjectBySocketId(socket.id);
   });
 
   socket.on("endCall", function (connectedUser) {
     //connctedUser userArray den bulunur 
     //ve ona socket.emit("callEnded", bu sockete gelen kullanıcının username de parametre olarak verilir
-    var validation = false;
-    for (let index = 0; index < usersArray.length; index++) {
-      var user = usersArray[index];
-      if(user.socketId == connectedUser.socketId){
-        var validation = true;
-        socket.emit("callEnded", socket.username);
-        console.log(connectedUser.username + " is ending the call");
-      }
-    }
-    if(!validation){
-      var errorObject = {};
-      errorObject.errorDescription = "Görüşülen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
-      errorObject.errorCode = "ERR-USER-010";
-      socket.emit("signalServerError", errorObject);
-      console.log("connectedUser is not present, terminating.");
-    };
 
+    var userObject = findUserObjectByUsername(connectedUser);
 
+    if(userObject)
+      io.of("/").connected[userObject.socketId].emit("callEnded");
+      
   });
 
   socket.on("peer-offer", function (offerObject) {
@@ -162,16 +131,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-    for (let index = 0; index < usersArray.length; index++) {
-      var user = usersArray[index];
-      //eğer arraydeki user objelerinden, socket id'si bu event'e gelen socket id ile eşitse
-      //ilgili user objesi, bu eventi tetikleyen; yani offerı yapan user oluyor. (arayan kişi)
-      if (user.username.toLowerCase() == offerObject.targetUsername.toLowerCase()) {
-        offeredUserObject = user;
-        break;
-      }
-    }
-
+    offeredUserObject = findUserObjectByUsername(offerObject.targetUsername);
 
     if (!offeredUserObject) {
       var errorObject = {};
@@ -202,17 +162,7 @@ io.on('connection', (socket) => {
       return;
     }
 
-
-    for (let index = 0; index < usersArray.length; index++) {
-      var user = usersArray[index];
-      //eğer arraydeki user objelerinden, socket id'si bu event'e gelen socket id ile eşitse
-      //ilgili user objesi, bu eventi tetikleyen; yani offerı yapan user oluyor. (arayan kişi)
-      if (user.username.toLowerCase() == offerObject.fromUsername.toLowerCase()) {
-        offeredUserObject = user;
-        break;
-      }
-    }
-
+    offeredUserObject = findUserObjectByUsername(offerObject.fromUsername);
 
     if (!offeredUserObject) {
       var errorObject = {};
@@ -234,23 +184,8 @@ io.on('connection', (socket) => {
     var offeredUserObject = 0;
     var callerUserObject = 0;
 
-
-    //elimizdeki arrayde dönüyoruz
-    for (let index = 0; index < usersArray.length; index++) {
-      var user = usersArray[index];
-      //eğer arraydeki user objelerinden, socket id'si bu event'e gelen socket id ile eşitse
-      //ilgili user objesi, bu eventi tetikleyen; yani offerı yapan user oluyor. (arayan kişi)
-      if (user.socketId == socket.id) {
-        callerUserObject = user;
-      }
-
-      //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
-      //ilgili user objesi, aranmak istenen usera denk geliyor
-      if (user.username.toLowerCase() == usernameToCall.toLowerCase()) {
-        offeredUserObject = user;
-        offeredUserObject.isOffered = true;
-      }
-    }
+    callerUserObject = findUserObjectBySocketId(socket.id);
+    offeredUserObject = findUserObjectByUsername(usernameToCall);
 
     //loop bitti, fakat aramayı yapmak isteyen kullanıcının objesini arrayde bulamadım.
     if (!callerUserObject) {
@@ -293,15 +228,7 @@ io.on('connection', (socket) => {
 
       var targetUserObject = 0;
 
-      for (let index = 0; index < usersArray.length; index++) {
-        var user = usersArray[index];
-
-        if (user.username.toLowerCase() == candidateObject.targetUsername.toLowerCase()) {
-          targetUserObject = user;
-          break;
-        }
-
-      }
+      targetUserObject = findUserObjectByUsername(candidateObject.targetUsername);
 
       if (!targetUserObject) {
         var errorObject = {};
@@ -325,22 +252,8 @@ io.on('connection', (socket) => {
     var offeredUserObject = 0;
     var callerUserObject = 0;
 
-
-    //elimizdeki arrayde dönüyoruz
-    for (let index = 0; index < usersArray.length; index++) {
-      var user = usersArray[index];
-      //eğer arraydeki user objelerinden, socket id'si bu event'e gelen socket id ile eşitse
-      //ilgili user objesi, bu eventi tetikleyen; yani offerı yapan user oluyor. (arayan kişi)
-      if (user.socketId == socket.id) {
-        offeredUserObject = user;
-      }
-
-      //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
-      //ilgili user objesi, aranmak istenen usera denk geliyor
-      if (user.username.toLowerCase() == answerObject.caller.toLowerCase()) {
-        callerUserObject = user;
-      }
-    }
+    offeredUserObject = findUserObjectBySocketId(socket.id);
+    callerUserObject = findUserObjectByUsername(answerObject.caller);
 
     //loop bitti, fakat aramayı yapmak isteyen kullanıcının objesini arrayde bulamadım.
     if (!callerUserObject) {
@@ -388,27 +301,19 @@ io.on('connection', (socket) => {
 
   //Seçilen sockete message objesini emit et
   socket.on("private-message", function (messageObject) {
-    var validation = false;
-    for (let index = 0; index < usersArray.length; index++) {
-      var user = usersArray[index];
-      if (user.username.toLowerCase() == messageObject.sendTo.toLowerCase()) {
-        validation = true;
-        console.log("Mesajı alacak kullanıcı bulundu");
-        io.to(user.socketId).emit("private-message", {
-          username: socket.username,
-          targetUsername: user.username,
-          message: messageObject.message
-        });
-        console.log("Mesaj " + user.username + " adlı kullanıcıya gönderildi");
-      }
-    };
-    if (validation == false) {
-      var errorObject = {};
-      errorObject.errorDescription = "Mesaj gönderilmesi istenen kullanıcıyı bulamadım, lütfen daha sonra tekrar deneyiniz.";
-      errorObject.errorCode = "ERR-USER-009";
-      socket.emit("signalServerError", errorObject);
-      console.log("target user is not present, terminating.");
-    };
+
+
+
+    var userObject = findUserObjectByUsername(messageObject.to);
+    if(!userObject)
+      return;
+
+      io.of("/").connected[userObject.socketId].emit("private-message", {
+      from: messageObject.from,
+      targetUsername: messageObject.to,
+      message: messageObject.message
+    });
+
   });
 
   //Bütün socketlere message objesini emit et
@@ -442,4 +347,93 @@ function updateUsers() {
     io.sockets.emit("online-Users", usersArray);
     console.log("Sending an array of online users");
   }
+};
+
+
+function findUserObjectByUsername(username)
+{
+  var returnValue = 0;
+
+  for (let index = 0; index < usersArray.length; index++) {
+    var user = usersArray[index];
+
+     //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
+    //ilgili user objesi, aranmak istenen usera denk geliyor
+    if (user.username.toLowerCase() == username.toLowerCase()) {
+      returnValue = user;
+      break;
+    }
+  }
+
+  return returnValue;
+};
+
+function findUserObjectBySocketId(socketId)
+{
+  var returnValue = 0;
+
+  for (let index = 0; index < usersArray.length; index++) {
+    var user = usersArray[index];
+    //eğer arraydeki user objelerinden, socket id'si bu event'e gelen socket id ile eşitse
+    //ilgili user objesi, bu eventi tetikleyen; yani offerı yapan user oluyor. (arayan kişi)
+    if (user.socketId == socketId) {
+      returnValue = user;
+      break;
+    }
+  }
+  
+  return returnValue;
+};
+
+function removeUserObjectBySocketId(socketId)
+{      
+  var userObjectToBeRemoved = -1;
+
+  userObjectToBeRemoved = findUserObjectBySocketId(socketId);
+
+  console.log("findUserObjectBySocketId result:"+userObjectToBeRemoved);
+
+  if (!userObjectToBeRemoved)
+  return;
+
+    //just in case
+    var foundSocketForceDisconnect = io.of("/").connected[userObjectToBeRemoved.socketId];
+    if(foundSocketForceDisconnect)
+    foundSocketForceDisconnect.emit("forceDisconnect");
+
+    var foundSocketClose = io.of("/").connected[userObjectToBeRemoved.socketId];
+    if(foundSocketClose && typeof foundSocketClose.close === "function")
+      foundSocketClose.close();
+
+    removeElement(usersArray, userObjectToBeRemoved);
+
+    console.log("removed element. array length:"+usersArray.length);
+    updateUsers();
+};
+
+
+function removeUserObjectByUsername(username)
+{      
+  var userObjectToBeRemoved = -1;
+
+  userObjectToBeRemoved = findUserObjectByUsername(username);
+
+  if (!userObjectToBeRemoved)
+  return;
+
+    //just in case
+    var foundSocketForceDisconnect = io.of("/").connected[userObjectToBeRemoved.socketId];
+    if(foundSocketForceDisconnect)
+    foundSocketForceDisconnect.emit("forceDisconnect");
+
+    var foundSocketClose = io.of("/").connected[userObjectToBeRemoved.socketId];
+    if(foundSocketClose && typeof foundSocketClose.close === "function")
+      foundSocketClose.close();
+          
+    removeElement(usersArray, userObjectToBeRemoved);
+
+    console.log("removed element. array length:"+usersArray.length);
+    updateUsers();
+
+  
 };

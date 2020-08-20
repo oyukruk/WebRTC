@@ -2,6 +2,11 @@
 <html lang = "en">
 
 <head>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <script src="js/jquery-3.5.1.min.js"></script>
     <script src="js/socket-io.js"></script>
     <script src="js/listbox.js"></script>
@@ -138,7 +143,11 @@ function hasUserMedia() {
          
         $("#callButton").on("click",function(){
 
-                        resetPeerConnectionObject();
+            if(userToCall)
+                socket.emit("endCall", userToCall)
+
+
+            resetPeerConnectionObject();
             clearVideosFromDOM();
             
             userToCall = getSelectedUsername();
@@ -160,28 +169,38 @@ function hasUserMedia() {
             }
         });
 
+        
         $("#endCallButton").on("click",function(){
-                 
+
+            console.log("end call click");
+                
             connectedUser = 0;
 
             if(callerUser != 0) connectedUser = callerUser;
-            
+
             else if (userToCall != 0) connectedUser = userToCall;
-            
+
             else {
-                alert("There is no current call.");
+                console.log("There is no current call.");
                 return;
             }
 
+            console.log("emitting endcall as:"+connectedUser);
             socket.emit("endCall", connectedUser)
             resetPeerConnectionObject();
             clearVideosFromDOM();
-        });
+            });
 
         socket.on("callEnded", function(){
             resetPeerConnectionObject();
             clearVideosFromDOM();
             console.log("call ended by remote user");
+        });
+
+        socket.on("forceDisconnect", function(){
+            console.log("got force disconnect signal, closing socket");
+            document.getElementById("greet").innerHTML = "Socket disconnected";
+            socket.close();
         });
 
 
@@ -190,13 +209,16 @@ function hasUserMedia() {
 
             var messageObject = {};
             messageObject.message = document.getElementById("messageInput").value;
+            messageObject.messageId = new Date().toString();
 
-            if(callerUser != 0) answerObject.sendTo = callerUser;
-            else if (userToCall != 0) answerObject.sendTo = userToCall;
+            if(callerUser != 0) messageObject.to = callerUser;
+            else if (userToCall != 0) messageObject.to = userToCall;
             else {
                 alert("You first need to connect a user.");
                 return;
             }
+
+            messageObject.from = userName;
 
             socket.emit("private-message",messageObject);
             document.getElementById("messageInput").value ="";
@@ -210,8 +232,7 @@ function hasUserMedia() {
                 // Add the item text
             listItem.innerHTML = userName + ": " + messageObject.message;
             listItem.setAttribute("style","color: #B63FE6;");
-            listItem.setAttribute("id","messages"+ messageId);
-            message-id++;
+            listItem.setAttribute("id","message-"+ messageId);
 
             // Add listItem to the listElement
             listElement.appendChild(listItem);
@@ -225,10 +246,11 @@ function hasUserMedia() {
             listItem = document.createElement('li');
 
                 // Add the item text
-                listItem.innerHTML = messageObject.username + ": " + messageObject.message;
+            listItem.innerHTML = messageObject.from + ": " + messageObject.message;
             listItem.setAttribute("style","color: #3FBFE6");
-            listItem.setAttribute("id","messages"+ messageId);
-            message-id++;
+            listItem.setAttribute("id","message-"+ messageObject.messageId);
+
+            
 
             // Add listItem to the listElement
             listElement.appendChild(listItem);
@@ -655,9 +677,10 @@ function resetPeerConnectionObject()
                 </div>
 
                 <div class="message-container">
+                
                     <div id="area">
 
-                        <ul id="Messages">
+                        <ul id="messages" style="list-style:none;">
 
                         </ul>
 
