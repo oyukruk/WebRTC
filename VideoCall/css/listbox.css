@@ -50,7 +50,7 @@
   button[aria-disabled="true"] {
     opacity: 0.5;
   }
-  
+/*   
   .move-right-btn {
     padding-right: 20px;
     position: relative;
@@ -65,9 +65,9 @@
     position: absolute;
     right: 2px;
     top: 6px;
-  }
+  } */
   
-  .move-left-btn {
+  /* .move-left-btn {
     padding-left: 20px;
     position: relative;
   }
@@ -81,7 +81,7 @@
     position: absolute;
     left: 2px;
     top: 6px;
-  }
+  } */
   
   #ss_elem_list {
     max-height: 18em;
@@ -89,7 +89,7 @@
     position: relative;
   }
   
-  #exp_button {
+  /* #exp_button {
     border-radius: 0;
     font-size: 16px;
     text-align: left;
@@ -121,8 +121,8 @@
     position: absolute;
     right: 5px;
     top: 10px;
-  }
-  
+  } */
+/*   
   #exp_elem_list {
     border-top: 0;
     max-height: 10em;
@@ -130,12 +130,12 @@
     position: absolute;
     margin: 0;
     width: 148px;
-  }
+  } */
   
-  .hidden {
+  /* .hidden {
     display: none;
-  }
-  
+  } */
+/*   
   .toolbar {
     font-size: 0;
   }
@@ -147,8 +147,8 @@
   
   .toolbar-item[aria-disabled="false"]:focus {
     background-color: #eee;
-  }
-  
+  } */
+/*   
   .offscreen {
     clip: rect(1px 1px 1px 1px);
     clip: rect(1px, 1px, 1px, 1px);
@@ -158,4 +158,4 @@
     position: absolute;
     white-space: nowrap;
     width: 1px;
-  }
+  } */
