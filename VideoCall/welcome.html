@@ -296,7 +296,7 @@ function hasUserMedia() {
 
             var listElement = document.getElementById("messages");
             // create an item for message
-            listItem = document.createElement('li');
+            listItem = document.createElement('li'); //aa
 
                 // Add the item text
             listItem.innerHTML = userName + ": " + messageObject.message;
@@ -316,7 +316,7 @@ function hasUserMedia() {
             listItem = document.createElement('li');
 
                 // Add the item text
-            listItem.innerHTML = messageObject.username + ": " + messageObject.message;
+                listItem.innerHTML = messageObject.username + ": " + messageObject.message;
             listItem.setAttribute("style","color: #3FBFE6");
             listItem.setAttribute("id","messages"+ messageId);
             message-id++;
