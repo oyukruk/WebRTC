@@ -283,6 +283,9 @@ function hasUserMedia() {
             var r = confirm("Incoming call from " + callerUsername);
             if (r == true) {
                 accepted = true;
+                //mevcut peer connection varsa durdur
+                resetPeerConnectionObject();
+                clearVideosFromDOM();
             } else {
                 accepted = false;
             }
@@ -630,7 +633,7 @@ function resetPeerConnectionObject()
                     listElement.innerHTML = "";
                     
                    break;
-                   
+
                     case "disconnected":
 
                     console.log("got force disconnect signal, closing socket");
