@@ -158,6 +158,9 @@ function hasUserMedia() {
          
         $("#callButton").on("click",function(){
 
+            var listElement = document.getElementById("messages");
+            listElement.innerHTML = "";
+
             if(userToCall)
                 socket.emit("endCall", userToCall)
 
