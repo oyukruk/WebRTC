@@ -223,9 +223,16 @@ function hasUserMedia() {
 
         $("#sendMsgButton").on("click",function(){
 
+
+
             var messageObject = {};
             messageObject.message = document.getElementById("messageInput").value;
             messageObject.messageId = new Date().toString();
+            
+            if(!peerConnection) {
+                alert("You first need to connect a user.");
+                return;
+            }
 
             if(callerUser != 0) messageObject.to = callerUser;
             else if (userToCall != 0) messageObject.to = userToCall;
