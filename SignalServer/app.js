@@ -93,19 +93,19 @@ io.on('connection', (socket) => {
       var nextUser = usersArray[index];
       if (nextUser.username == userObject.username) {
         removeUserObjectByUsername(nextUser.username);
-        break;        
+        break;
       }
     }
 
     usersArray.push(userObject);
     socket.emit("userSaved", userObject.username);
     updateUsers();
-    
+
   });
 
   socket.on("disconnect", function () {
-      console.log("got disconnect signal from socket id:"+socket.id);
-     removeUserObjectBySocketId(socket.id);
+    console.log("got disconnect signal from socket id:" + socket.id);
+    removeUserObjectBySocketId(socket.id);
   });
 
   socket.on("endCall", function (connectedUser) {
@@ -114,9 +114,9 @@ io.on('connection', (socket) => {
 
     var userObject = findUserObjectByUsername(connectedUser);
 
-    if(userObject)
+    if (userObject)
       io.of("/").connected[userObject.socketId].emit("callEnded");
-      
+
   });
 
   socket.on("peer-offer", function (offerObject) {
@@ -305,10 +305,10 @@ io.on('connection', (socket) => {
 
 
     var userObject = findUserObjectByUsername(messageObject.to);
-    if(!userObject)
+    if (!userObject)
       return;
 
-      io.of("/").connected[userObject.socketId].emit("private-message", {
+    io.of("/").connected[userObject.socketId].emit("private-message", {
       from: messageObject.from,
       targetUsername: messageObject.to,
       message: messageObject.message
@@ -323,6 +323,20 @@ io.on('connection', (socket) => {
       message: messageObject.message
     })
   });
+
+  socket.on("typing", function (username) {
+    if (findUserObjectByUsername(username) != null) {
+      io.of("/").connected[findUserObjectByUsername(username).socketId].emit("typing", {
+        username: socket.username
+      });
+    } else {
+      var errorObject = {};
+      errorObject.errorDescription = "Kayıtlı kullanıcı yok.";
+      errorObject.errorCode = "ERR-USER-011";
+      io.sockets.emit("signalServerError", errorObject);
+      console.log("Target user is not present.");
+    }
+  })
 });
 
 
@@ -350,14 +364,13 @@ function updateUsers() {
 };
 
 
-function findUserObjectByUsername(username)
-{
+function findUserObjectByUsername(username) {
   var returnValue = 0;
 
   for (let index = 0; index < usersArray.length; index++) {
     var user = usersArray[index];
 
-     //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
+    //eğer arraydeki user objelerinden, username'i bu evente parametre olarak gelen usernameToCall'a eşit ise
     //ilgili user objesi, aranmak istenen usera denk geliyor
     if (user.username.toLowerCase() == username.toLowerCase()) {
       returnValue = user;
@@ -368,8 +381,7 @@ function findUserObjectByUsername(username)
   return returnValue;
 };
 
-function findUserObjectBySocketId(socketId)
-{
+function findUserObjectBySocketId(socketId) {
   var returnValue = 0;
 
   for (let index = 0; index < usersArray.length; index++) {
@@ -381,59 +393,57 @@ function findUserObjectBySocketId(socketId)
       break;
     }
   }
-  
+
   return returnValue;
 };
 
-function removeUserObjectBySocketId(socketId)
-{      
+function removeUserObjectBySocketId(socketId) {
   var userObjectToBeRemoved = -1;
 
   userObjectToBeRemoved = findUserObjectBySocketId(socketId);
 
-  console.log("findUserObjectBySocketId result:"+userObjectToBeRemoved);
+  console.log("findUserObjectBySocketId result:" + userObjectToBeRemoved);
 
   if (!userObjectToBeRemoved)
-  return;
+    return;
 
-    //just in case
-    var foundSocketForceDisconnect = io.of("/").connected[userObjectToBeRemoved.socketId];
-    if(foundSocketForceDisconnect)
+  //just in case
+  var foundSocketForceDisconnect = io.of("/").connected[userObjectToBeRemoved.socketId];
+  if (foundSocketForceDisconnect)
     foundSocketForceDisconnect.emit("forceDisconnect");
 
-    var foundSocketClose = io.of("/").connected[userObjectToBeRemoved.socketId];
-    if(foundSocketClose && typeof foundSocketClose.close === "function")
-      foundSocketClose.close();
+  var foundSocketClose = io.of("/").connected[userObjectToBeRemoved.socketId];
+  if (foundSocketClose && typeof foundSocketClose.close === "function")
+    foundSocketClose.close();
 
-    removeElement(usersArray, userObjectToBeRemoved);
+  removeElement(usersArray, userObjectToBeRemoved);
 
-    console.log("removed element. array length:"+usersArray.length);
-    updateUsers();
+  console.log("removed element. array length:" + usersArray.length);
+  updateUsers();
 };
 
 
-function removeUserObjectByUsername(username)
-{      
+function removeUserObjectByUsername(username) {
   var userObjectToBeRemoved = -1;
 
   userObjectToBeRemoved = findUserObjectByUsername(username);
 
   if (!userObjectToBeRemoved)
-  return;
+    return;
 
-    //just in case
-    var foundSocketForceDisconnect = io.of("/").connected[userObjectToBeRemoved.socketId];
-    if(foundSocketForceDisconnect)
+  //just in case
+  var foundSocketForceDisconnect = io.of("/").connected[userObjectToBeRemoved.socketId];
+  if (foundSocketForceDisconnect)
     foundSocketForceDisconnect.emit("forceDisconnect");
 
-    var foundSocketClose = io.of("/").connected[userObjectToBeRemoved.socketId];
-    if(foundSocketClose && typeof foundSocketClose.close === "function")
-      foundSocketClose.close();
-          
-    removeElement(usersArray, userObjectToBeRemoved);
+  var foundSocketClose = io.of("/").connected[userObjectToBeRemoved.socketId];
+  if (foundSocketClose && typeof foundSocketClose.close === "function")
+    foundSocketClose.close();
 
-    console.log("removed element. array length:"+usersArray.length);
-    updateUsers();
+  removeElement(usersArray, userObjectToBeRemoved);
 
-  
+  console.log("removed element. array length:" + usersArray.length);
+  updateUsers();
+
+
 };

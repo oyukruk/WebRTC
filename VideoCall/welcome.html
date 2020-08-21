@@ -175,7 +175,8 @@ function hasUserMedia() {
                     .then(function(localStream) {
                         document.getElementById("video").srcObject = localStream;
                         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-                        document.getElementById("greet").innerHTML = "Calling " + userToCall;                
+                        //document.getElementById("greet").innerHTML = "Calling " + userToCall;     
+                        alert("Calling " + userToCall);           
                         socket.emit("offer",userToCall);     
                         console.log("emitting offer for:"+userToCall);
                     })
