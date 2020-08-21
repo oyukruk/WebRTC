@@ -630,7 +630,13 @@ function resetPeerConnectionObject()
                     listElement.innerHTML = "";
                     
                    break;
-                 //   case "disconnected":
+                    case "disconnected":
+                    socket.on("forceDisconnect", function(){
+                    console.log("got force disconnect signal, closing socket");
+                    document.getElementById("greet").innerHTML = "Socket disconnected";
+                    socket.close();
+        });
+                    break;
                  //   case "failed":
                     // One or more transports has terminated unexpectedly or in an error
                  //   break;
