@@ -631,12 +631,19 @@ function resetPeerConnectionObject()
 
                     var listElement = document.getElementById("messages");
                     listElement.innerHTML = "";
-                    
+
+                    connectedUser = 0;
+
+                    if(callerUser != 0) connectedUser = callerUser;
+
+                    else if (userToCall != 0) connectedUser = userToCall;
+
+                    document.getElementById("greet").innerHTML = "Connected " + connectedUser;
                    break;
 
                     case "disconnected":
 
-                    console.log("got force disconnect signal, closing socket");
+                    document.getElementById("greet").innerHTML = "Hosgeldin " + userName;
                     document.location.reload(true);
                     break;
 
