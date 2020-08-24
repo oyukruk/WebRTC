@@ -175,8 +175,7 @@ function hasUserMedia() {
                     .then(function(localStream) {
                         document.getElementById("video").srcObject = localStream;
                         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-                        //document.getElementById("greet").innerHTML = "Calling " + userToCall;     
-                        alert("Calling " + userToCall);           
+                        document.getElementById("greet").innerHTML = "Calling " + userToCall;                 
                         socket.emit("offer",userToCall);     
                         console.log("emitting offer for:"+userToCall);
                     })
@@ -641,27 +640,36 @@ function resetPeerConnectionObject()
                     listElement.innerHTML = "";
 
                     connectedUser = 0;
-
                     if(callerUser != 0) connectedUser = callerUser;
-
                     else if (userToCall != 0) connectedUser = userToCall;
-
                     document.getElementById("greet").innerHTML = "Connected " + connectedUser;
-                   break;
+
+                    console.log("connection State connected");
+                    break;
 
                     case "disconnected":
 
                     document.getElementById("greet").innerHTML = "Hosgeldin " + userName;
                     document.location.reload(true);
+
+                    console.log("connection State disconnected");
+
                     break;
 
                  //   case "failed":
                     // One or more transports has terminated unexpectedly or in an error
                  //   break;
-                 //   case "closed":
+
+                    case "closed":
                     // The connection has been closed
-                //    break;
-               // }
+                    document.getElementById("greet").innerHTML = "Hosgeldin " + userName;
+                    document.location.reload(true);
+
+                    console.log("connection State closed");
+
+                    break;
+               
+
                 }
         };
 
