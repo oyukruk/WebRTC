@@ -649,10 +649,9 @@ function resetPeerConnectionObject()
 
                     case "disconnected":
 
+                    console.log("connection State disconnected");
                     document.getElementById("greet").innerHTML = "Hosgeldin " + userName;
                     document.location.reload(true);
-
-                    console.log("connection State disconnected");
 
                     break;
 
@@ -662,10 +661,9 @@ function resetPeerConnectionObject()
 
                     case "closed":
                     // The connection has been closed
-                    document.getElementById("greet").innerHTML = "Hosgeldin " + userName;
-                    document.location.reload(true);
-
                     console.log("connection State closed");
+                    document.getElementById("greet").innerHTML = "Connection closed "//"Hosgeldin " + userName;
+                    document.location.reload(true);
 
                     break;
                
