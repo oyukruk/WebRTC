@@ -6,7 +6,8 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script src="js/jquery-3.5.1.min.js"></script>
     <script src="js/socket-io.js"></script>
     <script src="js/listbox.js"></script>
@@ -181,8 +182,25 @@ function hasUserMedia() {
                     })
             }
             else{
-                alert("Username of the user you want to call is required.");
-            }
+                const leftArea=document.querySelectorAll(".left-area")[0];
+                function showAlert(type,message){
+            
+            const alert=document.createElement("div");
+
+            alert.className=`alert alert-${type}`;
+
+            alert.textContent=message;
+
+            leftArea.appendChild(alert);
+
+            //setTimeout (bellir bir saniye sonra kapatma)
+            setTimeout(function(){
+                alert.remove();
+            },2000);
+        }
+
+        showAlert("warning","Username of the user you want to call is required.")
+    }
         });
 
         
@@ -237,7 +255,26 @@ function hasUserMedia() {
             if(callerUser != 0) messageObject.to = callerUser;
             else if (userToCall != 0) messageObject.to = userToCall;
             else {
-                alert("You first need to connect a user.");
+
+                const messageArea=document.querySelectorAll(".message-container")[0];
+                function showAlert(type,message){
+            
+            const alert=document.createElement("div");
+
+            alert.className=`alert alert-${type}`;
+
+            alert.textContent=message;
+            alert.style.width="20rem";
+            messageArea.appendChild(alert);
+
+            //setTimeout (bellir bir saniye sonra kapatma)
+            setTimeout(function(){
+                alert.remove();
+            },2000);
+        }
+
+        showAlert("warning","Username of the user you want to call is required.")
+
                 return;
             }
 

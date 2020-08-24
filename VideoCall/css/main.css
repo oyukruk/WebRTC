@@ -155,8 +155,8 @@ body{
         display: flex;
         flex-direction: column;
         padding: 20px;
-        background:#FFE4E1;
-        border: 3px solid #aaa;
+        background:	#808080;
+        border: 3px solid black;
         
     }
 
@@ -166,7 +166,7 @@ body{
         width: 20rem;
         height: 45rem;
         background: white;
-        border: 1px solid #aaa;
+        border: 1px solid black;
         overflow: auto;
     }
 
