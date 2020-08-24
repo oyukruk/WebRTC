@@ -32,6 +32,7 @@ body{
     font-size: 1rem;
     justify-content: center;
     resize: none;
+    border: 1px solid black;
 }
 
 .buttonsubmit{
