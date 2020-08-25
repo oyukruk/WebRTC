@@ -332,7 +332,9 @@ io.on('connection', (socket) => {
       io.sockets.emit("signalServerError", errorObject);
       console.log("Target user is not present.");
     }
-  })
+  });
+
+
 });
 
 
@@ -358,7 +360,6 @@ function updateUsers() {
     console.log("Sending an array of online users");
   }
 };
-
 
 function findUserObjectByUsername(username) {
   var returnValue = 0;
@@ -442,3 +443,4 @@ function removeUserObjectByUsername(username) {
 
 
 };
+
