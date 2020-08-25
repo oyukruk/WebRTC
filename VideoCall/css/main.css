@@ -182,6 +182,7 @@ body{
     }
 
     ul{
+        width: 100%;
         padding-inline-start: 10px;
     }
 
