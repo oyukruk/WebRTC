@@ -85,10 +85,6 @@ io.on('connection', (socket) => {
     userObject.isOffered = false;
     userObject.isAnswered = false;
 
-
-    //Localimde çalıştırdığımda aynı isimli kullanıcılar kabul ediliyor
-    //Son giren isim olarak boş string alıyor
-    //Boş string alan kullanıcı arama yapamıyor
     for (let index = 0; index < usersArray.length; index++) {
       var nextUser = usersArray[index];
       if (nextUser.username == userObject.username) {
@@ -377,7 +373,6 @@ function findUserObjectByUsername(username) {
       break;
     }
   }
-
   return returnValue;
 };
 
