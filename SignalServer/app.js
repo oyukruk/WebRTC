@@ -85,10 +85,6 @@ io.on('connection', (socket) => {
     userObject.isOffered = false;
     userObject.isAnswered = false;
 
-
-    //Localimde çalıştırdığımda aynı isimli kullanıcılar kabul ediliyor
-    //Son giren isim olarak boş string alıyor
-    //Boş string alan kullanıcı arama yapamıyor
     for (let index = 0; index < usersArray.length; index++) {
       var nextUser = usersArray[index];
       if (nextUser.username == userObject.username) {
@@ -336,7 +332,9 @@ io.on('connection', (socket) => {
       io.sockets.emit("signalServerError", errorObject);
       console.log("Target user is not present.");
     }
-  })
+  });
+
+
 });
 
 
@@ -363,7 +361,6 @@ function updateUsers() {
   }
 };
 
-
 function findUserObjectByUsername(username) {
   var returnValue = 0;
 
@@ -377,7 +374,6 @@ function findUserObjectByUsername(username) {
       break;
     }
   }
-
   return returnValue;
 };
 
@@ -447,3 +443,4 @@ function removeUserObjectByUsername(username) {
 
 
 };
+
