@@ -77,22 +77,33 @@ function hasUserMedia() {
 
         socket = io.connect('https://webrtc-signalserver.azurewebsites.net');
 
-        // btnVideo
+         
 
-        // $("#btnVideo").on("click", function(){
+         $("#btnVideo").on("click", function(){
 
-        //     var mute=document.getElementById("btnVideo");
-        //     console.log("clicked");
+            var mute=document.getElementById("btnVideo");
+            console.log("clicked"+mute.className);
 
-        //     var video=document.getElementById("video");
+            if($("#btnVideo").hasClass("fa-video"))
+            {
+            $("#btnVideo").addClass("fa-video-slash");
+            $("#btnbtnVideoMute").removeClass("fa-video");
+            }
+            else if($("#btnVideo").hasClass("fa-video-slash"))
+            {
+            $("#btnVideo").addClass("fa-video");
+            $("#btnVideo").removeClass("fa-video-slash");
+            }
 
-        //     video.autoplay=false;
-
-        //     console.log("btnMute clicked. new mute value :"+video.muted);
-        //         return;
+             var videoTracks = mainLocalStream.getVideoTracks();     
             
+             if (videoTracks[0]) {
+                 videoTracks[0].enabled = !videoTracks[0].enabled;
+                
+            }
+             console.log("btnVideo clicked. new mute value :"+video.muted);            
 
-        // }); 
+         }); 
 
         $("#btnAccept").on("click", function(){
             $(".modal").modal("hide");
@@ -166,7 +177,7 @@ function hasUserMedia() {
             console.log("clicked:"+$("#btnQuite").css("background-color"));
 
             if($("#btnQuite").css("background-color") == "rgb(255, 255, 255)" || $("#btnQuite").css("background-color") == "rgb(239, 239, 239)")
-                $("#btnQuite").css("background-color","rgb(40, 43, 28)");
+                $("#btnQuite").css("background-color","rgb(192, 192, 192)");
             else
                 $("#btnQuite").css("background-color","rgb(255, 255, 255)");
         
@@ -718,7 +729,7 @@ function resetPeerConnectionObject()
         peerConnection.onconnectionstatechange = function(event) {
 
             console.log("peer connection state changed:"+peerConnection.connectionState);
-
+            // const buttons=document.querySelectorAll("#buttons")[0];
                 switch(peerConnection.connectionState) {
                     case "connected":
 
@@ -731,6 +742,7 @@ function resetPeerConnectionObject()
                     document.getElementById("greet").innerHTML = "Connected " + connectedUser;
 
                     console.log("connection State connected");
+                    // buttons.style.visibility="none;";
                     break;
 
                     case "disconnected":
@@ -807,8 +819,9 @@ function resetPeerConnectionObject()
                 <video id="remoteVideo" autoplay playsinline style="width:640px; height:480px; object-fit: cover;"></video>
             </div>
                 </div>
+
             <div id="buttons">
-                <!-- <button class="fas fa-video" id="btnVideo"></button> -->
+                <button class="fas fa-video" id="btnVideo"></button>
                 <button class="fas fa-microphone" id="btnMute"></button>
                 <button class="fas fa-headphones" id="btnQuite"></button>
             </div>
