@@ -68,10 +68,10 @@ body{
 }
 
 #camera{
-    width: auto;
+    width: 100%;
     height: auto;
     margin: 0 auto;
-    border: 4px solid  black;
+
 }
 
 .welcome-group{
